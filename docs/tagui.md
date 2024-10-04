@@ -37,3 +37,27 @@ tagui .\7_newtab.tag
 tagui .\8_chineseflow.tag
 tagui .\9_lazada.tag
 ```
+
+### 注意
+
+1. 利用 tagui 进行 cmd 执行命令的默认路径在 tagui.cmd 所在的目录（比如直接创建文件夹会创建到这个路径下面，而不是 tag 脚本在的工作目录）
+
+2. tagui 用反引号 `xxx` 来进行变量引用 xxx 变量
+
+3. 运行 tagui for python 时，他生成图片文件的默认路径貌似又是 cmd 中当前路径了。
+
+4. 懂了、如果要用图片作为操作目标。要先把需要操作的图片放在脚本所在的目录下、然后用相对路径引用。
+
+5. 有一个问题、如果在自动化流程中把浏览器关了、目前好像这个脚本不会终止。
+
+## TagUI for Python
+
+- https://github.com/tebelorg/RPA-Python?tab=readme-ov-file
+
+1. 安装
+
+```cmd
+pip install rpa
+```
+
+2. 第一次使用会自动重新安装 tagui，需要手动在 C:\Users\Horiz\AppData\Roaming 目录下找到、并像上面那样更改浏览器路径。
