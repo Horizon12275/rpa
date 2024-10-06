@@ -1,0 +1,716 @@
+{
+  "code": 200,
+  "data": {
+    "codes": [
+      {
+        "data": "01,01,4400154130,12271524,2987.18,20160612,,688C,",
+        "type": "QRcode",
+        "points": [
+          {
+            "x": 424,
+            "y": 566
+          },
+          {
+            "x": 779,
+            "y": 566
+          },
+          {
+            "x": 779,
+            "y": 917
+          },
+          {
+            "x": 424,
+            "y": 917
+          }
+        ]
+      }
+    ],
+    "ftype": 0,
+    "algo_version": "",
+    "data": {
+      "sellerBankAccountInfo": "工行北京路支行3602000919200384952",
+      "purchaserBankAccountInfo": "中国工商银行股份有限公司深圳园岭支行4000024709200172809",
+      "sellerName": "广州晶东贸易有限公司",
+      "invoiceTax": "507.82",
+      "passwordArea": "<<1<//3*26-++936-9<9*575>39 -<5//81>84974<00+7>2*0*53-+ +125*++9+-///5-7+/-0>8<9815 5<3/8*+//81/84+>6>4*36>4538",
+      "title": "广东增值税专用发票",
+      "printedInvoiceNumber": "12271524",
+      "totalAmountInWords": "叁仟肆佰玖拾伍圆整",
+      "invoiceNumber": "12271524",
+      "invoiceType": "专用发票",
+      "invoiceDetails": [
+        {
+          "unitPrice": "597.43589744",
+          "taxRate": "17%",
+          "itemName": "小米红米3全网通版时尚金色移动联通电信4G手机双卡双待",
+          "unit": "个",
+          "amount": "2987.18",
+          "quantity": "5",
+          "specification": "红*3",
+          "tax": "507.82"
+        }
+      ],
+      "purchaserContactInfo": "深圳市龙华新区民治街道民治大道展滔科技大厦A12070755-23806606",
+      "formType": "抵扣联",
+      "machineCode": "",
+      "specialTag": "",
+      "printedInvoiceCode": "4400154130",
+      "drawer": "陈秋燕",
+      "reviewer": "张雪",
+      "invoiceDate": "2016年06月12日",
+      "purchaserTaxNumber": "440300083885931",
+      "invoiceCode": "4400154130",
+      "purchaserName": "深圳市购机汇网络有限公司",
+      "checkCode": "",
+      "totalAmount": "3495.00",
+      "sellerContactInfo": "广州市黄埔区九龙镇九龙工业园凤凰三横路99号66215500",
+      "invoiceAmountPreTax": "2987.18",
+      "recipient": "王梅",
+      "sellerTaxNumber": "91440101664041243T",
+      "remarks": "dd42982413947(00001,19522879696"
+    },
+    "orgWidth": 4208,
+    "sliceRect": {
+      "y0": 355,
+      "x0": 0,
+      "y1": 343,
+      "x1": 4208,
+      "y2": 2902,
+      "x2": 4208,
+      "y3": 2938,
+      "x3": 12
+    },
+    "requestId": "FC39BCC9-EEFA-52FB-95EF-C48FB729695A",
+    "width": 4208,
+    "angle": 0,
+    "orgHeight": 3120,
+    "prism_keyValueInfo": [
+      {
+        "valuePos": [
+          {
+            "x": 784,
+            "y": 230
+          },
+          {
+            "x": 1432,
+            "y": 231
+          },
+          {
+            "x": 1432,
+            "y": 334
+          },
+          {
+            "x": 784,
+            "y": 334
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "4400154130",
+        "key": "invoiceCode"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 3135,
+            "y": 208
+          },
+          {
+            "x": 3695,
+            "y": 209
+          },
+          {
+            "x": 3695,
+            "y": 325
+          },
+          {
+            "x": 3135,
+            "y": 325
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "12271524",
+        "key": "invoiceNumber"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 3730,
+            "y": 265
+          },
+          {
+            "x": 4026,
+            "y": 264
+          },
+          {
+            "x": 4026,
+            "y": 320
+          },
+          {
+            "x": 3731,
+            "y": 322
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "4400154130",
+        "key": "printedInvoiceCode"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 3689,
+            "y": 337
+          },
+          {
+            "x": 4018,
+            "y": 337
+          },
+          {
+            "x": 4018,
+            "y": 407
+          },
+          {
+            "x": 3689,
+            "y": 407
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "12271524",
+        "key": "printedInvoiceNumber"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 3495,
+            "y": 438
+          },
+          {
+            "x": 3959,
+            "y": 438
+          },
+          {
+            "x": 3959,
+            "y": 514
+          },
+          {
+            "x": 3495,
+            "y": 514
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "2016年06月12日",
+        "key": "invoiceDate"
+      },
+      {
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "",
+        "key": "machineCode"
+      },
+      {
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "",
+        "key": "checkCode"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1019,
+            "y": 612
+          },
+          {
+            "x": 1764,
+            "y": 612
+          },
+          {
+            "x": 1764,
+            "y": 682
+          },
+          {
+            "x": 1019,
+            "y": 682
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "深圳市购机汇网络有限公司",
+        "key": "purchaserName"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1082,
+            "y": 707
+          },
+          {
+            "x": 1882,
+            "y": 705
+          },
+          {
+            "x": 1882,
+            "y": 775
+          },
+          {
+            "x": 1083,
+            "y": 776
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "440300083885931",
+        "key": "purchaserTaxNumber"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1021,
+            "y": 810
+          },
+          {
+            "x": 2390,
+            "y": 809
+          },
+          {
+            "x": 2390,
+            "y": 865
+          },
+          {
+            "x": 1022,
+            "y": 866
+          }
+        ],
+        "keyProb": 97,
+        "valueProb": 97,
+        "value": "深圳市龙华新区民治街道民治大道展滔科技大厦A12070755-23806606",
+        "key": "purchaserContactInfo"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1020,
+            "y": 907
+          },
+          {
+            "x": 2458,
+            "y": 906
+          },
+          {
+            "x": 2458,
+            "y": 962
+          },
+          {
+            "x": 1021,
+            "y": 963
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "中国工商银行股份有限公司深圳园岭支行4000024709200172809",
+        "key": "purchaserBankAccountInfo"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 2636,
+            "y": 618
+          },
+          {
+            "x": 3909,
+            "y": 613
+          },
+          {
+            "x": 3910,
+            "y": 916
+          },
+          {
+            "x": 2637,
+            "y": 922
+          }
+        ],
+        "keyProb": 95,
+        "valueProb": 98,
+        "value": "<<1<//3*26-++936-9<9*575>39 -<5//81>84974<00+7>2*0*53-+ +125*++9+-///5-7+/-0>8<9815 5<3/8*+//81/84+>6>4*36>4538",
+        "key": "passwordArea"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 2962,
+            "y": 1698
+          },
+          {
+            "x": 3334,
+            "y": 1698
+          },
+          {
+            "x": 3334,
+            "y": 1767
+          },
+          {
+            "x": 2962,
+            "y": 1767
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "2987.18",
+        "key": "invoiceAmountPreTax"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 3733,
+            "y": 1698
+          },
+          {
+            "x": 4051,
+            "y": 1693
+          },
+          {
+            "x": 4052,
+            "y": 1762
+          },
+          {
+            "x": 3733,
+            "y": 1766
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "507.82",
+        "key": "invoiceTax"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1540,
+            "y": 1824
+          },
+          {
+            "x": 2145,
+            "y": 1822
+          },
+          {
+            "x": 2145,
+            "y": 1893
+          },
+          {
+            "x": 1541,
+            "y": 1896
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "叁仟肆佰玖拾伍圆整",
+        "key": "totalAmountInWords"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 3345,
+            "y": 1825
+          },
+          {
+            "x": 3745,
+            "y": 1820
+          },
+          {
+            "x": 3746,
+            "y": 1888
+          },
+          {
+            "x": 3346,
+            "y": 1893
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "3495.00",
+        "key": "totalAmount"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1019,
+            "y": 1970
+          },
+          {
+            "x": 1645,
+            "y": 1961
+          },
+          {
+            "x": 1646,
+            "y": 2031
+          },
+          {
+            "x": 1021,
+            "y": 2040
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "广州晶东贸易有限公司",
+        "key": "sellerName"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1105,
+            "y": 2061
+          },
+          {
+            "x": 2069,
+            "y": 2050
+          },
+          {
+            "x": 2070,
+            "y": 2121
+          },
+          {
+            "x": 1106,
+            "y": 2131
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "91440101664041243T",
+        "key": "sellerTaxNumber"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1018,
+            "y": 2151
+          },
+          {
+            "x": 2352,
+            "y": 2140
+          },
+          {
+            "x": 2352,
+            "y": 2200
+          },
+          {
+            "x": 1019,
+            "y": 2212
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "广州市黄埔区九龙镇九龙工业园凤凰三横路99号66215500",
+        "key": "sellerContactInfo"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1024,
+            "y": 2239
+          },
+          {
+            "x": 2135,
+            "y": 2228
+          },
+          {
+            "x": 2135,
+            "y": 2296
+          },
+          {
+            "x": 1024,
+            "y": 2307
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "工行北京路支行3602000919200384952",
+        "key": "sellerBankAccountInfo"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 731,
+            "y": 2327
+          },
+          {
+            "x": 865,
+            "y": 2327
+          },
+          {
+            "x": 865,
+            "y": 2402
+          },
+          {
+            "x": 731,
+            "y": 2402
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "王梅",
+        "key": "recipient"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1695,
+            "y": 2317
+          },
+          {
+            "x": 1836,
+            "y": 2317
+          },
+          {
+            "x": 1836,
+            "y": 2393
+          },
+          {
+            "x": 1695,
+            "y": 2393
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "张雪",
+        "key": "reviewer"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 2580,
+            "y": 2314
+          },
+          {
+            "x": 2789,
+            "y": 2313
+          },
+          {
+            "x": 2789,
+            "y": 2388
+          },
+          {
+            "x": 2581,
+            "y": 2390
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "陈秋燕",
+        "key": "drawer"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 2623,
+            "y": 1960
+          },
+          {
+            "x": 3620,
+            "y": 1958
+          },
+          {
+            "x": 3621,
+            "y": 2024
+          },
+          {
+            "x": 2623,
+            "y": 2027
+          }
+        ],
+        "keyProb": 95,
+        "valueProb": 95,
+        "value": "dd42982413947(00001,19522879696",
+        "key": "remarks"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1662,
+            "y": 146
+          },
+          {
+            "x": 2732,
+            "y": 141
+          },
+          {
+            "x": 2732,
+            "y": 265
+          },
+          {
+            "x": 1662,
+            "y": 270
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "广东增值税专用发票",
+        "key": "title"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 195,
+            "y": 7
+          },
+          {
+            "x": 195,
+            "y": 66
+          },
+          {
+            "x": 0,
+            "y": 65
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "抵扣联",
+        "key": "formType"
+      },
+      {
+        "valuePos": [
+          {
+            "x": 1662,
+            "y": 146
+          },
+          {
+            "x": 2732,
+            "y": 141
+          },
+          {
+            "x": 2732,
+            "y": 265
+          },
+          {
+            "x": 1662,
+            "y": 270
+          }
+        ],
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "专用发票",
+        "key": "invoiceType"
+      },
+      {
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "",
+        "key": "specialTag"
+      },
+      {
+        "keyProb": 100,
+        "valueProb": 100,
+        "value": "[{\"itemName\":\"小米红米3全网通版时尚金色移动联通电信4G手机双卡双待\",\"specification\":\"红*3\",\"unit\":\"个\",\"quantity\":\"5\",\"unitPrice\":\"597.43589744\",\"amount\":\"2987.18\",\"taxRate\":\"17%\",\"tax\":\"507.82\"}]",
+        "key": "invoiceDetails"
+      }
+    ],
+    "height": 3120
+  },
+  "requestId": "8ee62bbb-cc54-4ec3-b6c5-e660db21f78a"
+}

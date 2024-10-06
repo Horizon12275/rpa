@@ -50,6 +50,8 @@ tagui .\9_lazada.tag
 
 5. 有一个问题、如果在自动化流程中把浏览器关了、目前好像这个脚本不会终止。
 
+6. 感觉应该统一使用命令行启动，这样可以统一路径
+
 ## TagUI for Python
 
 - https://github.com/tebelorg/RPA-Python?tab=readme-ov-file

@@ -1,6 +1,6 @@
 import rpa as r
 
-# 说实话没看懂这个图片是怎么使用的
+# 好像能用
 r.init(visual_automation = True)
 r.dclick('outlook_icon.png')
 r.click('new_mail.png')
