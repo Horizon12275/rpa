@@ -28,7 +28,7 @@
 
 1. https://ai.aliyun.com/ocr/invoice
 
-2. ../flows/demo/b0.txt
+2. ../flows/demo/result/b0.txt
 
 ## 百度 OCR 发票
 

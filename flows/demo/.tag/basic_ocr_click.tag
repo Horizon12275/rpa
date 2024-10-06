@@ -1,14 +1,3 @@
-// 下面的代码没法用
-// ---
-// vision begin
-// import org.sikuli.script.TextRecognizer as TR
-// Settings.OcrReadText = True
-// Settings.OcrLanguage = "chi_sim"
-// TR.reset()
-// click 登录 using OCR
-// vision finish
-// ---
-
 // visit IRAS website (for managing taxes in Singapore)
 https://www.iras.gov.sg/irashome/default.aspx
 

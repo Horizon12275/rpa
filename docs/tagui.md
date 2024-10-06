@@ -38,6 +38,8 @@ tagui .\8_chineseflow.tag
 tagui .\9_lazada.tag
 ```
 
+7. tagui live 模式，类似 idle、可以实时运行输入的代码。
+
 ### 注意
 
 1. 利用 tagui 进行 cmd 执行命令的默认路径在 tagui.cmd 所在的目录（比如直接创建文件夹会创建到这个路径下面，而不是 tag 脚本在的工作目录）
@@ -63,3 +65,15 @@ pip install rpa
 ```
 
 2. 第一次使用会自动重新安装 tagui，需要手动在 C:\Users\Horiz\AppData\Roaming 目录下找到、并像上面那样更改浏览器路径。
+
+## TagUI RPA Web Recorder
+
+1. https://chromewebstore.google.com/detail/tagui-rpa-web-recorder/gjdajlcpkkjgjjokkekiniengajiamnk
+
+2. 感觉用不了 不如自己写
+
+## Microsoft Word & Excel Add-in
+
+1. https://github.com/aisingapore/TagUI/blob/master/src/office/README.md
+
+2. 下载完之后会在 Word 和 Excel 中多出一个 TagUI 的选项卡
