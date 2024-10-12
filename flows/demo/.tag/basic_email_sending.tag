@@ -32,7 +32,7 @@ keyboard [enter]
 keyboard [ctrl][space]
 // keyboard horizon52183
 keyboard [tab]
-keyboard password
+keyboard `email_password`
 keyboard [enter]
 
 // 点击写信
@@ -52,6 +52,9 @@ frame email_body_iframe
 {
     type //*[@class="nui-scroll"] as `email_body`
 }
+
+// 上传附件
+upload .O0 as ./basic_excel.tag
 
 // 点击发送
 click //*[text()="发送"]

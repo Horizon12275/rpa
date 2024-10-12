@@ -83,7 +83,9 @@ APPId = "5112a02c"
 APISecret = "ZmFlMzE4ZmMzNmZjZWVjMThlZjBjOTMw"
 APIKey = "bef4768fcf5354adab0085747446c91f"
 
-with open("../dataset_test/b0.jpg", "rb") as f:
+pic_name = "a320"
+
+with open(f'../../../dataset/a/{pic_name}.jpg', 'rb') as f:
     imageBytes = f.read()
 
 url = 'http://api.xf-yun.com/v1/private/s824758f1'
@@ -124,9 +126,9 @@ response = requests.post(request_url, data=json.dumps(body), headers=headers)
 tempResult = json.loads(response.content.decode())
 finalResult = base64.b64decode(tempResult['payload']['result']['text']).decode()
 finalResult = finalResult.replace(" ", "").replace("\n", "").replace("\t", "").strip()
-print("text字段Base64解码后=>"+finalResult)
+# print("text字段Base64解码后=>"+finalResult)
 
 # 把finalResult写入json文件
-with open("../dataset_test/b0.json", "w") as f:
+with open(f'../../../dataset/result/{pic_name}.json', 'w') as f:
     f.write(finalResult)
     f.close()
