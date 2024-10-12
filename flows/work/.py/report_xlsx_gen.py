@@ -7,8 +7,8 @@ def write_invoices_to_excel(json_file, output_file):
     with open(json_file, 'r', encoding='utf-8') as file:
         invoices = json.load(file)
     
-    df = pd.DataFrame(invoices, columns=['invoice_number', 'seller', 'buyer', 'amount', 'transaction_date', 'approval_status'])
-    df.columns = ['发票号码', '卖方', '买方', '金额', '交易时间', '审批状态']
+    df = pd.DataFrame(invoices, columns=['invoice_number', 'seller', 'buyer', 'amount', 'transaction_date', 'approval_status','manual_review_reason','img_url'])
+    df.columns = ['发票号码', '卖方', '买方', '金额', '交易时间', '审批状态', '转人工审批原因', '图片链接']
 
     with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
         df.to_excel(writer, index=False, sheet_name='发票数据详情')
