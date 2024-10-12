@@ -1,0 +1,26 @@
+[
+    {
+        "invoice_number": "INV001",
+        "seller": "Seller A",
+        "buyer": "Zhejiang University",
+        "amount": 1500,
+        "transaction_date": "2015-05-10",
+        "approval_status": "Approved"
+    },
+    {
+        "invoice_number": "INV002",
+        "seller": "Seller B",
+        "buyer": "Shenzhen Purchasing Network Co., Ltd.",
+        "amount": 2500,
+        "transaction_date": "2016-06-12",
+        "approval_status": "Approved"
+    },
+    {
+        "invoice_number": "INV003",
+        "seller": "Seller C",
+        "buyer": "Company X",
+        "amount": 3000,
+        "transaction_date": "2017-08-15",
+        "approval_status": "Rejected"
+    }
+]
