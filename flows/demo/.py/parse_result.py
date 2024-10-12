@@ -3,8 +3,10 @@ import json
 # 初始化result
 result = None
 
+json_name = "a320"
+
 # 从../dataset_test/b0.json文件中读取json格式的数据
-with open('../dataset_test/b0.json', 'r') as f:
+with open(f'../../../dataset/result/{json_name}.json', 'r') as f:
     result = json.load(f)
     # print(result)
 

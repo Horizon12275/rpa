@@ -1,0 +1,19 @@
+{
+    "Invoice Approval Summary": {
+      "Total Invoices": 1000,
+      "Approved Invoices": 700,
+      "Rejected Invoices": 200,
+      "Invoices Sent for Manual Review": 100,
+      "Approval Status Ratio": {
+        "Approved": "70%",
+        "Rejected": "20%",
+        "Manual Review": "10%"
+      },
+      "Maximum Invoice Amount": 50000,
+      "Minimum Invoice Amount": 100,
+      "Average Invoice Amount": 1500,
+      "Most Common Reason for Manual Review": "Low Image Recognition",
+      "Duplicate Invoice Count": 1
+    }
+}
+  
