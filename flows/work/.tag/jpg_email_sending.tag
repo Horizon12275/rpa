@@ -2,8 +2,10 @@
 email_username = 'horizon52183'
 email_password = '3e4r5t6y7uSED'
 email_to = 'horizon52183@outlook.com'
-email_subject = 'Test Email测试'
-load ../.txt/email_body.txt to email_body
+email_subject = '发票人工审批转发通知'
+load ../.txt/jpg_body.txt to email_body
+email_attachment_1 = '../.xlsx/转人工审批原因.xlsx'
+email_attachment_2 = '../.7z/待人工审批发票.7z'
 
 // 打开 163
 https://mail.163.com/
@@ -38,7 +40,8 @@ frame email_body_iframe
 }
 
 // 上传附件
-upload .O0 as ./basic_excel.tag
+upload .O0 as `email_attachment_1`
+upload .O0 as `email_attachment_2`
 
 // 点击发送
 click //*[text()="发送"]

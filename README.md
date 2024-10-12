@@ -19,8 +19,17 @@
 
 #### 环境配置
 
-1. conda create -n rpa python=3.9.20
+```shell
+conda create -n rpa python=3.9.20
+conda activate rpa
+pip install -r requirements.txt
+```
 
-2. conda activate rpa
+- 同时需将 7z.exe 添加到环境变量中
 
-3. pip install -r requirements.txt
+#### 运行方式
+
+```shell
+cd ./flows/work/
+start.bat
+```
