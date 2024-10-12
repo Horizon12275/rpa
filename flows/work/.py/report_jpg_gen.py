@@ -50,8 +50,8 @@ def plot_invoice_distribution(file_path, save_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         invoices = json.load(f)
 
-    # 提取发票金额
-    amounts = [invoice["amount"] for invoice in invoices]
+    # 提取发票金额，注意要进行过滤、如果approval_status为Manual Review则不计入
+    amounts = [invoice['amount'] for invoice in invoices if invoice['approval_status'] != 'Manual Review']
 
     # 设置每500为一个区间
     bins = np.arange(0, max(amounts) + 500, 500)
