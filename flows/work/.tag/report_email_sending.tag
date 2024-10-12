@@ -3,7 +3,7 @@ email_username = 'horizon52183'
 email_password = '3e4r5t6y7uSED'
 email_to = 'horizon52183@outlook.com'
 email_subject = '自动化发票数据处理情况汇报'
-load ../.txt/email_body.txt to email_body
+load ../.txt/report_body.txt to email_body
 email_attachment = '../.xlsx/发票自动化处理统计报表.xlsx'
 
 // 打开 163
