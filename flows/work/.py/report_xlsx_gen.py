@@ -59,7 +59,24 @@ def write_transaction_summary_to_excel(json_file, output_file):
         'most_frequent_transaction_relationship': '最频繁交易关系'
     })
 
-    
+    # 自定义排序顺序
+    custom_order = [
+        '大客户',
+        '客户',
+        '一般客户',
+        '重要供应商',
+        '供应商',
+        '一般供应商',
+        '当前购买量最大的3个买方',
+        '当前卖出量最大的3个卖方',
+        '最频繁交易关系'
+    ]
+
+    # 将 '交易关系汇总' 列转换为分类类型，并指定排序顺序
+    df['交易关系汇总'] = pd.Categorical(df['交易关系汇总'], categories=custom_order, ordered=True)
+
+    # 按照自定义顺序排序 DataFrame
+    df = df.sort_values(by='交易关系汇总').reset_index(drop=True)
 
     # 对于最后面的 '最频繁交易关系'，读出它的value，{'client': 'Client1', 'supplier': 'Supplier1'}
     # 把这两个合并成一个字符串，然后写入 DataFrame
@@ -91,6 +108,26 @@ def write_invoice_approval_summary_to_excel(json_file, output_file):
         'mostCommonReasonforManualReview': '最多转人工审批原因',
         'duplicateInvoiceCount': '重复发票张数'
     })
+
+    # 自定义排序顺序
+    custom_order = [
+        '总发票数量',
+        '通过发票数量',
+        '不通过发票数量',
+        '转人工审批发票数量',
+        '审批状态比例',
+        '发票最大金额',
+        '发票最小金额',
+        '发票平均金额',
+        '最多转人工审批原因',
+        '重复发票张数'
+    ]
+
+    # 将 '发票审批状态汇总' 列转换为分类类型，并指定排序顺序
+    df['发票审批状态汇总'] = pd.Categorical(df['发票审批状态汇总'], categories=custom_order, ordered=True)
+
+    # 按照自定义顺序排序 DataFrame
+    df = df.sort_values(by='发票审批状态汇总').reset_index(drop=True)
 
     # 把审批状态比例的值，从字典转换为字符串
     approval_status_ratio = invoice_approval_summary['InvoiceApprovalSummary']['approvalStatusRatio']
