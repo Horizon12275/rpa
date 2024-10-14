@@ -7,7 +7,7 @@ def write_invoices_to_excel(json_file, output_file):
     with open(json_file, 'r', encoding='utf-8') as file:
         invoices = json.load(file)
     
-    df = pd.DataFrame(invoices, columns=['invoice_number', 'seller', 'buyer', 'amount', 'transaction_date', 'approval_status','img_url'])
+    df = pd.DataFrame(invoices, columns=['number', 'supplier', 'customer', 'amount', 'date', 'status','imageUri'])
     df.columns = ['发票号码', '卖方', '买方', '金额', '交易时间', '审批状态', '图片链接']
 
     # 需要进行过滤、如果approval_status为Manual Review则不计入
@@ -46,7 +46,7 @@ def write_transaction_summary_to_excel(json_file, output_file):
     df['value'] = df['value'].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
     df.columns = ['交易关系汇总', '']
 
-    # 每一行的第一列 转换为对应的中文，并且按照下面给出的字段顺序进行排序
+    # 每一行的第一列 转换为对应的中文
     df['交易关系汇总'] = df['交易关系汇总'].map({
         'major_clients': '大客户',
         'clients': '客户',
@@ -58,8 +58,8 @@ def write_transaction_summary_to_excel(json_file, output_file):
         'top_sellers_by_sales_volume': '当前卖出量最大的3个卖方',
         'most_frequent_transaction_relationship': '最频繁交易关系'
     })
-    # 按照上面给出的字段顺序进行排序，即大客户在dict中的顺序是第一个，客户是第二个，以此类推
-    df = df.sort_values(by='交易关系汇总', key=lambda x: [0, 1, 2, 3, 4, 5, 6, 7, 8].index(x))
+
+    
 
     # 对于最后面的 '最频繁交易关系'，读出它的value，{'client': 'Client1', 'supplier': 'Supplier1'}
     # 把这两个合并成一个字符串，然后写入 DataFrame
