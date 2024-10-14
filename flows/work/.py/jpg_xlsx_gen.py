@@ -11,13 +11,13 @@ manual_review_data = []
 for invoice in invoice_data:
     if invoice['approval_status'] == 'Manual Review':
         manual_review_data.append({
-            'Image URL': invoice['img_url'],
-            'Manual Review Reason': invoice['manual_review_reason']
+            'ImageURL': invoice['img_url'],
+            'ManualReviewReason': invoice['manual_review_reason']
         })
 
 # 把里面的列名改成中文
 manual_review_data = [
-    {'图片链接': invoice['Image URL'], '转人工审批原因': invoice['Manual Review Reason']}
+    {'图片链接': invoice['ImageURL'], '转人工审批原因': invoice['ManualReviewReason']}
     for invoice in manual_review_data
 ]
 

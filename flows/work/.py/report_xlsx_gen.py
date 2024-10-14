@@ -73,25 +73,25 @@ def write_invoice_approval_summary_to_excel(json_file, output_file):
     with open(json_file, 'r', encoding='utf-8') as file:
         invoice_approval_summary = json.load(file)
 
-    df = pd.DataFrame(invoice_approval_summary['Invoice Approval Summary'].items(), columns=['key', 'value'])
+    df = pd.DataFrame(invoice_approval_summary['InvoiceApprovalSummary'].items(), columns=['key', 'value'])
     df['value'] = df['value'].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
     df.columns = ['发票审批状态汇总', '']
 
     df['发票审批状态汇总'] = df['发票审批状态汇总'].map({
-        'Total Invoices': '总发票数量',
-        'Approved Invoices': '通过发票数量',
-        'Rejected Invoices': '不通过发票数量',
-        'Invoices Sent for Manual Review': '转人工审批发票数量',
-        'Approval Status Ratio': '审批状态比例',
-        'Maximum Invoice Amount': '发票最大金额',
-        'Minimum Invoice Amount': '发票最小金额',
-        'Average Invoice Amount': '发票平均金额',
-        'Most Common Reason for Manual Review': '最多转人工审批原因',
-        'Duplicate Invoice Count': '重复发票张数'
+        'TotalInvoices': '总发票数量',
+        'ApprovedInvoices': '通过发票数量',
+        'RejectedInvoices': '不通过发票数量',
+        'InvoicesSentforManualReview': '转人工审批发票数量',
+        'ApprovalStatusRatio': '审批状态比例',
+        'MaximumInvoiceAmount': '发票最大金额',
+        'MinimumInvoiceAmount': '发票最小金额',
+        'AverageInvoiceAmount': '发票平均金额',
+        'MostCommonReasonforManualReview': '最多转人工审批原因',
+        'DuplicateInvoiceCount': '重复发票张数'
     })
 
     # 把审批状态比例的值，从字典转换为字符串
-    approval_status_ratio = invoice_approval_summary['Invoice Approval Summary']['Approval Status Ratio']
+    approval_status_ratio = invoice_approval_summary['InvoiceApprovalSummary']['ApprovalStatusRatio']
     approval_status_ratio_str = f"{approval_status_ratio['Approved']} / {approval_status_ratio['Rejected']} / {approval_status_ratio['Manual Review']}"
     df.loc[df['发票审批状态汇总'] == '审批状态比例', '',] = approval_status_ratio_str
 
