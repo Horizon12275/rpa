@@ -6,7 +6,7 @@ def generate_manual_review_txt(json_file, output_txt_file):
         data = json.load(f)
 
     # 获取待人工审批发票数量
-    manual_review_count = data["InvoiceApprovalSummary"]["InvoicesSentforManualReview"]
+    manual_review_count = data["InvoiceApprovalSummary"]["invoicesSentforManualReview"]
 
     # 创建待人工审批信息文本
     message = (

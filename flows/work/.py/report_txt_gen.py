@@ -10,10 +10,10 @@ def generate_invoice_report(json_invoice_file, json_transaction_file, output_txt
         transaction_data = json.load(f)
 
     # 提取发票信息
-    total_invoices = invoice_data["InvoiceApprovalSummary"]["TotalInvoices"]
-    approved_invoices = invoice_data["InvoiceApprovalSummary"]["ApprovedInvoices"]
-    rejected_invoices = invoice_data["InvoiceApprovalSummary"]["RejectedInvoices"]
-    manual_review_count = invoice_data["InvoiceApprovalSummary"]["InvoicesSentforManualReview"]
+    total_invoices = invoice_data["InvoiceApprovalSummary"]["totalInvoices"]
+    approved_invoices = invoice_data["InvoiceApprovalSummary"]["approvedInvoices"]
+    rejected_invoices = invoice_data["InvoiceApprovalSummary"]["rejectedInvoices"]
+    manual_review_count = invoice_data["InvoiceApprovalSummary"]["invoicesSentforManualReview"]
 
     # 提取交易信息
     top_buyers = transaction_data["transaction_summary"]["top_buyers_by_purchase_volume"]

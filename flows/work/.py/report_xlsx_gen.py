@@ -7,16 +7,11 @@ def write_invoices_to_excel(json_file, output_file):
     with open(json_file, 'r', encoding='utf-8') as file:
         invoices = json.load(file)
     
-<<<<<<< Updated upstream
-    df = pd.DataFrame(invoices, columns=['invoice_number', 'seller', 'buyer', 'amount', 'transaction_date', 'approval_status','img_url'])
+    df = pd.DataFrame(invoices, columns=['number', 'supplier', 'customer', 'amount', 'date', 'status','imageUri'])
     df.columns = ['发票号码', '卖方', '买方', '金额', '交易时间', '审批状态', '图片链接']
 
     # 需要进行过滤、如果approval_status为Manual Review则不计入
-    df = df[df['审批状态'] != 'Manual Review']
-=======
-    df = pd.DataFrame(invoices, columns=['number', 'supplier', 'customer', 'amount', 'date', 'status','remark','imageUri'])
-    df.columns = ['发票号码', '卖方', '买方', '金额', '交易时间', '审批状态', '转人工审批原因', '图片链接']
->>>>>>> Stashed changes
+    df = df[df['审批状态'] != '人工审批']
 
     with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
         df.to_excel(writer, index=False, sheet_name='发票数据详情')
@@ -64,6 +59,25 @@ def write_transaction_summary_to_excel(json_file, output_file):
         'most_frequent_transaction_relationship': '最频繁交易关系'
     })
 
+    # 自定义排序顺序
+    custom_order = [
+        '大客户',
+        '客户',
+        '一般客户',
+        '重要供应商',
+        '供应商',
+        '一般供应商',
+        '当前购买量最大的3个买方',
+        '当前卖出量最大的3个卖方',
+        '最频繁交易关系'
+    ]
+
+    # 将 '交易关系汇总' 列转换为分类类型，并指定排序顺序
+    df['交易关系汇总'] = pd.Categorical(df['交易关系汇总'], categories=custom_order, ordered=True)
+
+    # 按照自定义顺序排序 DataFrame
+    df = df.sort_values(by='交易关系汇总').reset_index(drop=True)
+
     # 对于最后面的 '最频繁交易关系'，读出它的value，{'client': 'Client1', 'supplier': 'Supplier1'}
     # 把这两个合并成一个字符串，然后写入 DataFrame
     most_frequent_transaction_relationship = transaction_summary['transaction_summary']['most_frequent_transaction_relationship']
@@ -83,21 +97,41 @@ def write_invoice_approval_summary_to_excel(json_file, output_file):
     df.columns = ['发票审批状态汇总', '']
 
     df['发票审批状态汇总'] = df['发票审批状态汇总'].map({
-        'TotalInvoices': '总发票数量',
-        'ApprovedInvoices': '通过发票数量',
-        'RejectedInvoices': '不通过发票数量',
-        'InvoicesSentforManualReview': '转人工审批发票数量',
-        'ApprovalStatusRatio': '审批状态比例',
-        'MaximumInvoiceAmount': '发票最大金额',
-        'MinimumInvoiceAmount': '发票最小金额',
-        'AverageInvoiceAmount': '发票平均金额',
-        'MostCommonReasonforManualReview': '最多转人工审批原因',
-        'DuplicateInvoiceCount': '重复发票张数'
+        'totalInvoices': '总发票数量',
+        'approvedInvoices': '通过发票数量',
+        'rejectedInvoices': '不通过发票数量',
+        'invoicesSentforManualReview': '转人工审批发票数量',
+        'approvalStatusRatio': '审批状态比例',
+        'maximumInvoiceAmount': '发票最大金额',
+        'minimumInvoiceAmount': '发票最小金额',
+        'averageInvoiceAmount': '发票平均金额',
+        'mostCommonReasonforManualReview': '最多转人工审批原因',
+        'duplicateInvoiceCount': '重复发票张数'
     })
 
+    # 自定义排序顺序
+    custom_order = [
+        '总发票数量',
+        '通过发票数量',
+        '不通过发票数量',
+        '转人工审批发票数量',
+        '审批状态比例',
+        '发票最大金额',
+        '发票最小金额',
+        '发票平均金额',
+        '最多转人工审批原因',
+        '重复发票张数'
+    ]
+
+    # 将 '发票审批状态汇总' 列转换为分类类型，并指定排序顺序
+    df['发票审批状态汇总'] = pd.Categorical(df['发票审批状态汇总'], categories=custom_order, ordered=True)
+
+    # 按照自定义顺序排序 DataFrame
+    df = df.sort_values(by='发票审批状态汇总').reset_index(drop=True)
+
     # 把审批状态比例的值，从字典转换为字符串
-    approval_status_ratio = invoice_approval_summary['InvoiceApprovalSummary']['ApprovalStatusRatio']
-    approval_status_ratio_str = f"{approval_status_ratio['Approved']} / {approval_status_ratio['Rejected']} / {approval_status_ratio['Manual Review']}"
+    approval_status_ratio = invoice_approval_summary['InvoiceApprovalSummary']['approvalStatusRatio']
+    approval_status_ratio_str = f"{approval_status_ratio['approved']} / {approval_status_ratio['rejected']} / {approval_status_ratio['manualReview']}"
     df.loc[df['发票审批状态汇总'] == '审批状态比例', '',] = approval_status_ratio_str
 
     # 写入 Excel 文件
