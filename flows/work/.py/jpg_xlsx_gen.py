@@ -11,8 +11,13 @@ manual_review_data = []
 for invoice in invoice_data:
     if invoice['approval_status'] == 'Manual Review':
         manual_review_data.append({
+<<<<<<< Updated upstream
             'ImageURL': invoice['img_url'],
             'ManualReviewReason': invoice['manual_review_reason']
+=======
+            'Image URL': invoice['imageUri'],
+            'Manual Review Reason': invoice['remark']
+>>>>>>> Stashed changes
         })
 
 # 把里面的列名改成中文

@@ -13,8 +13,8 @@ def plot_buyers_pie_chart(file_path, save_path):
         buyers_data = json.load(file)
 
     # 提取买方名称和总开销
-    buyers = [buyer['buyer'] for buyer in buyers_data]
-    total_amounts = [buyer['total_amount'] for buyer in buyers_data]
+    buyers = [buyer['name'] for buyer in buyers_data]
+    total_amounts = [buyer['amount'] for buyer in buyers_data]
 
     # 绘制饼图
     plt.figure(figsize=(8, 8))
@@ -32,8 +32,8 @@ def plot_sellers_pie_chart(file_path, save_path):
         sellers_data = json.load(file)
 
     # 提取卖方名称和总开销
-    sellers = [seller['seller'] for seller in sellers_data]
-    total_amounts = [seller['total_amount'] for seller in sellers_data]
+    sellers = [seller['name'] for seller in sellers_data]
+    total_amounts = [seller['amount'] for seller in sellers_data]
 
     # 绘制饼图
     plt.figure(figsize=(8, 8))

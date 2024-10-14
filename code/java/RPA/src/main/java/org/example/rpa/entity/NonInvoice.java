@@ -14,5 +14,6 @@ public class NonInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    private String fileName;
     private String imageUri;
 }

@@ -28,8 +28,9 @@ if __name__ == "__main__":
                 response_list.append(response)
                 cnt += 1  # 用于循环使用APP_list中的不同KEY
 
-    ocr("input/1", 1)
-    ocr("input/2", 2)
+    # ocr("input/1", 1)
+    # ocr("input/2", 2)
+    ocr("input/test",1)
 
     with open("data.json", "a") as json_file:
         json.dump(response_list, json_file, ensure_ascii=False)

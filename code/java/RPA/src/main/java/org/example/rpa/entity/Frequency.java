@@ -14,10 +14,11 @@ public class Frequency {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @ManyToOne(fetch = FetchType.LAZY)
+    private Integer freq;//次数
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cid")
     private Customer customer;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sid")
     private Supplier supplier;
 }

@@ -3,28 +3,23 @@ package org.example.rpa;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import org.example.rpa.entity.Customer;
-import org.example.rpa.entity.Invoice;
-import org.example.rpa.entity.NonInvoice;
-import org.example.rpa.entity.Supplier;
+import org.example.rpa.entity.*;
+import org.example.rpa.entity.DTO.InvoiceDTO;
+import org.example.rpa.entity.DTO.InvoiceSummary;
+import org.example.rpa.entity.DTO.TransactionSummary;
 import org.example.rpa.repo.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @SpringBootApplication
 public class RpaApplication implements CommandLineRunner {
@@ -35,30 +30,31 @@ public class RpaApplication implements CommandLineRunner {
     private final List<Supplier> suppliers=new ArrayList<>();
     private final List<Invoice> invoices=new ArrayList<>();
     private final List<NonInvoice> nonInvoices=new ArrayList<>();
-    private final int[] nonInvoiceTypes = {20,22,26,27,35,31,83,39,37,33,38};
+    private int duplicateNum = 0;
+    private final int[] invoiceTypes = {1,4,14,11,24,25,28,8,3,36,10,15,23,21,9};
     private final UploadRepo uploadRepo;
     private final CustomerRepo customerRepo;
     private final SupplierRepo supplierRepo;
     private final InvoiceRepo invoiceRepo;
     private final NonInvoiceRepo nonInvoiceRepo;
+    private final FrequencyRepo frequencyRepo;
 
-    public RpaApplication(UploadRepo uploadRepo, CustomerRepo customerRepo, SupplierRepo supplierRepo, InvoiceRepo invoiceRepo, NonInvoiceRepo nonInvoiceRepo) {
+    public RpaApplication(UploadRepo uploadRepo, CustomerRepo customerRepo, SupplierRepo supplierRepo, InvoiceRepo invoiceRepo, NonInvoiceRepo nonInvoiceRepo, FrequencyRepo frequencyRepo) {
         this.uploadRepo = uploadRepo;
         this.customerRepo = customerRepo;
         this.supplierRepo = supplierRepo;
         this.invoiceRepo = invoiceRepo;
         this.nonInvoiceRepo = nonInvoiceRepo;
+        this.frequencyRepo = frequencyRepo;
     }
-
     public static void main(String[] args) {
         SpringApplication.run(RpaApplication.class, args);
-
-
     }
     @Override
     public void run(String... args) throws Exception {
-        data.addAll(readData());
-        parseData();
+//        data.addAll(readData());
+//        parseData();
+        saveData();
     }
 
     private List<JSONObject> readData() {
@@ -75,8 +71,8 @@ public class RpaApplication implements CommandLineRunner {
         return null;
     }
     // 将file转换为multipartFile并上传 返回url
-    private String uploadFile(String filePath) throws IOException {
-        filePath="src/main/resources/"+filePath; // 修正路径
+    private String uploadFile(String filePath,Integer dataSet) throws IOException {
+        filePath="../../python/input/"+dataSet.toString()+"/"+filePath; // 修正路径为../../python/input/1/xxx.jpg
         File file = new File(filePath);
         if (!file.exists()) {
             throw new IOException("File not found: " + filePath);
@@ -87,86 +83,132 @@ public class RpaApplication implements CommandLineRunner {
     }
     private void parseData() throws IOException{
         for (JSONObject json : data) {
-            int code = json.getJSONObject("header").getIntValue("code");
+            int code = json.getJSONObject("header").getIntValue("code"); // 错误码
+            int dataSet = json.getIntValue("data_set"); // 数据集类型
+            String fileName = json.getString("file_name");
             if (code != 0){ // 有错误码
                 Invoice invoice = new Invoice();
                 invoice.setStatus(3); // 人工审批
-                invoice.setRemark("无法识别发票 错误码：{" + code + "}");
-                invoice.setImageUri(uploadFile(json.getString("file_name")));
+                invoice.setRemark("无法识别发票 错误码：{" + code + "} 人工审批");
+                invoice.setImageUri(uploadFile(fileName,dataSet));
+                invoice.setFileName(fileName);
                 invoiceRepo.save(invoice);
                 continue;
             }
             // 获取base64编码的结果
             String base64 = json.getJSONObject("payload").getJSONObject("output_text_result").getString("text");
             JSONObject result = JSON.parseArray(new String(java.util.Base64.getDecoder().decode(base64))).getJSONObject(0);
+            if (result.containsKey("invoice")){
+                result=result.getJSONObject("invoice"); // 有invoice字段
+            }
             System.out.println(result.toJSONString());
             int type = result.getIntValue("invoiceType");
-            if (Arrays.stream(nonInvoiceTypes).anyMatch(i -> i == type)) { // 非发票
+            if (Arrays.stream(invoiceTypes).noneMatch(i -> i == type)) { // 非发票
                 NonInvoice nonInvoice = new NonInvoice();
-                nonInvoice.setImageUri(uploadFile(json.getString("file_name")));
+                nonInvoice.setImageUri(uploadFile(fileName,dataSet));
+                nonInvoice.setFileName(fileName);
                 nonInvoiceRepo.save(nonInvoice);
             } else { // 发票
-                if (result.containsKey("invoice")){
-                    result=result.getJSONObject("invoice"); // 有invoice字段
-                }
                 Invoice invoice = new Invoice();
                 String number = result.getString("invoiceNumber");//发票号码
                 if (number != null && invoiceRepo.getInvoiceByNumber(number) != null) { // 重复发票 不再处理
+                    duplicateNum++;
                     continue;
                 }
                 String dateStr = result.getString("billingDate");
-                if (dateStr != null) {
-                    LocalDate date = LocalDate.parse(result.getString("billingDate"));//开票日期
-                    invoice.setDate(date);
-                }
                 String supplierName = result.getString("salesName");//供应商名称
                 String customerName = result.getString("purchaserName");//客户名称
                 Integer amount = result.getInteger("amountTax");//金额
+                filter(amount,supplierName,customerName,dateStr,invoice);
+                if (invoice.getStatus()!=null && invoice.getStatus() == 3) { // 人工审批
+                    invoice.setImageUri(uploadFile(fileName,dataSet));
+                    invoice.setFileName(fileName);
+                    invoiceRepo.save(invoice);
+                    continue;
+                }
                 invoice.setNumber(number);
                 invoice.setAmount(amount);
-                if (supplierName != null) {
-                    Supplier supplier = supplierRepo.getSupplierByName(supplierName);
-                    if (supplier == null) {
-                        supplier = new Supplier();
-                        supplier.setName(supplierName);
-                        supplier.setAmount(0);
-                        supplier.setCount(0);
-                    }
-                    supplier.setAmount(supplier.getAmount() + amount);
-                    supplier.setCount(supplier.getCount() + 1);
-                    supplierRepo.save(supplier);
-                    invoice.setSupplier(supplier);
+
+                Supplier supplier = supplierRepo.getSupplierByName(supplierName);
+                if (supplier == null) {
+                    supplier = new Supplier();
+                    supplier.setName(supplierName);
+                    supplier.setAmount(0);
+                    supplier.setCount(0);
                 }
-                if (customerName != null) {
-                    Customer customer = customerRepo.getCustomerByName(customerName);
-                    if (customer == null) {
-                        customer = new Customer();
-                        customer.setName(customerName);
-                        customer.setAmount(0);
-                        customer.setCount(0);
-                    }
-                    customer.setAmount(customer.getAmount() + amount);
-                    customer.setCount(customer.getCount() + 1);
-                    customerRepo.save(customer);
-                    invoice.setCustomer(customer);
+                supplier.setAmount(supplier.getAmount() + amount);
+                supplier.setCount(supplier.getCount() + 1);
+                supplierRepo.save(supplier);
+                invoice.setSupplier(supplier);
+
+                Customer customer = customerRepo.getCustomerByName(customerName);
+                if (customer == null) {
+                    customer = new Customer();
+                    customer.setName(customerName);
+                    customer.setAmount(0);
+                    customer.setCount(0);
                 }
+
+                customer.setAmount(customer.getAmount() + amount);
+                customer.setCount(customer.getCount() + 1);
+                customerRepo.save(customer);
+                invoice.setCustomer(customer);
+
+                //
+                Frequency frequency = frequencyRepo.getFrequencyByCustomerIdAndSupplierId(customer.getId(), supplier.getId());
+                if (frequency == null) {
+                    frequency = new Frequency();
+                    frequency.setCustomer(customer);
+                    frequency.setSupplier(supplier);
+                    frequency.setFreq(0);
+                }
+                frequency.setFreq(frequency.getFreq() + 1);
+                frequencyRepo.save(frequency);
+
                 //进行审批
-                int dataSet = json.getIntValue("data_set");
                 approve(dataSet,invoice);
-                invoice.setImageUri(uploadFile(json.getString("file_name")));
+                invoice.setImageUri(uploadFile(fileName,dataSet));
+                invoice.setFileName(fileName);
                 invoiceRepo.save(invoice);
             }
         }
     }
-    // 审批 type是数据集类型
+    //筛选出无法识别字段的发票 转为人工审批
+    private void filter(Integer amount, String supplierName, String customerName, String dateStr,Invoice invoice){
+        if (amount == null || amount <= 0) {
+            invoice.setStatus(3);
+            invoice.setRemark("无法识别金额 人工审批");
+            return;
+        }
+        if (supplierName == null || supplierName.isEmpty()) {
+            invoice.setStatus(3);
+            invoice.setRemark("无法识别供应商 人工审批");
+            return;
+        }
+        if (customerName == null || customerName.isEmpty()) {
+            invoice.setStatus(3);
+            invoice.setRemark("无法识别客户 人工审批");
+            return;
+        }
+        if (dateStr == null || dateStr.isEmpty()) {
+            invoice.setStatus(3);
+            invoice.setRemark("无法识别开票日期 人工审批");
+            return;
+        }
+        LocalDate date = null;
+        try {
+            date = LocalDate.parse(dateStr);
+        }
+        catch (Exception e) {
+            invoice.setStatus(3);
+            invoice.setRemark("无法识别开票日期 人工审批");
+        }
+        invoice.setDate(date);
+    }
+    // 审批通过识别的发票 dataSet是数据集类型
     private void approve(int dataSet,Invoice invoice){
         if (dataSet == 1) {
             Customer customer = invoice.getCustomer();
-            if (customer == null) {
-                invoice.setStatus(2);
-                invoice.setRemark("无法识别付款方");
-                return;
-            }
             String customerName = customer.getName();
             if (!Objects.equals(customerName, "浙江大学")) {
                 int same=customerName.contains("浙")?1:0;
@@ -184,20 +226,9 @@ public class RpaApplication implements CommandLineRunner {
                 return;
             }
             LocalDate date = invoice.getDate();
-            if (date == null) {
-                invoice.setStatus(2);
-                invoice.setRemark("无法识别开票日期");
-                return;
-            }
             if (date.getYear()!=2015){
                 invoice.setStatus(2);
                 invoice.setRemark("开票日期不是2015年");
-                return;
-            }
-            Integer amount = invoice.getAmount();
-            if (amount == null) {
-                invoice.setStatus(2);
-                invoice.setRemark("无法识别金额");
                 return;
             }
             if (invoice.getAmount() > 1600) {
@@ -207,5 +238,214 @@ public class RpaApplication implements CommandLineRunner {
             }
             invoice.setStatus(1);
         }
+        if (dataSet == 2){
+            Customer customer = invoice.getCustomer();
+            String customerName = customer.getName();
+            if (!Objects.equals(customerName, "深圳市购机汇网络有限公司")) {
+                invoice.setStatus(2);
+                invoice.setRemark("付款方不是深圳市购机汇网络有限公司");
+                return;
+            }
+            LocalDate date = invoice.getDate();
+            if (!Objects.equals(date, LocalDate.of(2016, 6, 12))) {
+                invoice.setStatus(2);
+                invoice.setRemark("开票日期不是2016年6月12日");
+                return;
+            }
+            if (invoice.getAmount() > 2700) {
+                invoice.setStatus(2);
+                invoice.setRemark("金额超过2700元");
+                return;
+            }
+            invoice.setStatus(1);
+        }
+    }
+    // 导出数据
+
+    protected void saveData() throws IOException {
+        FileWriter fileWriter = new FileWriter("buyer.json");
+        // customers
+        customers.addAll(customerRepo.findAll());
+        classifyCustomer(customers);
+        fileWriter.write(JSON.toJSONString(customers));
+        fileWriter.close();
+        // suppliers
+        fileWriter = new FileWriter("seller.json");
+        suppliers.addAll(supplierRepo.findAll());
+        classifySupplier(suppliers);
+        fileWriter.write(JSON.toJSONString(suppliers));
+        fileWriter.close();
+        // invoices
+        fileWriter = new FileWriter("invoice.json");
+        invoices.addAll(invoiceRepo.findAll());
+        List<InvoiceDTO> invoiceDTOS = new ArrayList<>();
+        for (Invoice invoice : invoices) {
+            InvoiceDTO invoiceDTO = new InvoiceDTO();
+            if (invoice.getAmount() != null)
+                invoiceDTO.setAmount(invoice.getAmount());
+            if (invoice.getCustomer() != null)
+                invoiceDTO.setCustomer(invoice.getCustomer().getName());
+            if (invoice.getSupplier() != null)
+                invoiceDTO.setSupplier(invoice.getSupplier().getName());
+            if (invoice.getDate() != null)
+                invoiceDTO.setDate(invoice.getDate());
+            if (invoice.getStatus() != null)
+                invoiceDTO.setStatus(invoice.getStatus() == 1 ? "通过" : invoice.getStatus() == 2 ? "未通过" : "人工审批");//1 通过 2 未通过 3 人工审批
+            if (invoice.getRemark() != null)
+                invoiceDTO.setRemark(invoice.getRemark());
+            if (invoice.getNumber() != null)
+                invoiceDTO.setNumber(invoice.getNumber());
+            invoiceDTOS.add(invoiceDTO);
+        }
+        fileWriter.write(JSON.toJSONString(invoiceDTOS));
+        fileWriter.close();
+        // transaction summary
+        fileWriter = new FileWriter("transaction_summary.json");
+        TransactionSummary transactionSummary = new TransactionSummary();
+        transactionSummary.setMajor_clients(customers.stream().filter(c -> c.getType().equals("重要客户")).map(Customer::getName).toArray(String[]::new));
+        transactionSummary.setClients(customers.stream().filter(c -> c.getType().equals("普通客户")).map(Customer::getName).toArray(String[]::new));
+        transactionSummary.setRegular_clients(customers.stream().filter(c -> c.getType().equals("小客户")).map(Customer::getName).toArray(String[]::new));
+        transactionSummary.setImportant_suppliers(suppliers.stream().filter(s -> s.getType().equals("重要供应商")).map(Supplier::getName).toArray(String[]::new));
+        transactionSummary.setSuppliers(suppliers.stream().filter(s -> s.getType().equals("普通供应商")).map(Supplier::getName).toArray(String[]::new));
+        transactionSummary.setRegular_suppliers(suppliers.stream().filter(s -> s.getType().equals("小供应商")).map(Supplier::getName).toArray(String[]::new));
+        transactionSummary.setTop_buyers_by_purchase_volume(customers.stream().sorted(Comparator.comparingInt(Customer::getAmount).reversed()).limit(3).map(Customer::getName).toArray(String[]::new));
+        transactionSummary.setTop_sellers_by_sales_volume(suppliers.stream().sorted(Comparator.comparingInt(Supplier::getAmount).reversed()).limit(3).map(Supplier::getName).toArray(String[]::new));
+        Frequency mostFrequent = frequencyRepo.findAll().stream().max(Comparator.comparingInt(Frequency::getFreq)).orElse(null);
+        if (mostFrequent != null) {
+            TransactionSummary.relation relation = new TransactionSummary.relation();
+            relation.client = mostFrequent.getCustomer().getName();
+            relation.supplier = mostFrequent.getSupplier().getName();
+            transactionSummary.setMost_frequent_transaction_relationship(relation);
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("transaction_summary", transactionSummary);
+        fileWriter.write(JSON.toJSONString(jsonObject));
+        fileWriter.close();
+        // invoice summary
+        fileWriter = new FileWriter("invoice_approval_summary.json");
+        InvoiceSummary invoiceSummary = new InvoiceSummary();
+        invoiceSummary.setTotalInvoices(invoices.size());
+        invoiceSummary.setApprovedInvoices((int) invoices.stream().filter(i -> i.getStatus() == 1).count());
+        invoiceSummary.setRejectedInvoices((int) invoices.stream().filter(i -> i.getStatus() == 2).count());
+        invoiceSummary.setInvoicesSentforManualReview((int) invoices.stream().filter(i -> i.getStatus() == 3).count());
+
+        invoiceSummary.setMaximumInvoiceAmount(invoices.stream().filter(i -> i.getAmount() != null).mapToInt(Invoice::getAmount).max().orElse(0));
+        invoiceSummary.setMinimumInvoiceAmount(invoices.stream().filter(i -> i.getAmount() != null).mapToInt(Invoice::getAmount).min().orElse(0));
+        invoiceSummary.setAverageInvoiceAmount((int) invoices.stream().filter(i -> i.getAmount() != null).mapToInt(Invoice::getAmount).average().orElse(0));
+        invoiceSummary.setMostCommonReasonforManualReview(invoices.stream().filter(i -> i.getStatus() == 3).map(Invoice::getRemark).max(Comparator.comparingInt(String::length)).orElse(""));
+        invoiceSummary.setDuplicateInvoiceCount(duplicateNum);
+        InvoiceSummary.ApprovalStatusRatio approvalStatusRatio = new InvoiceSummary.ApprovalStatusRatio();
+        approvalStatusRatio.setApproved(String.format("%.2f%%", (double) invoiceSummary.getApprovedInvoices() / invoiceSummary.getTotalInvoices() * 100));//通过率
+        approvalStatusRatio.setRejected(String.format("%.2f%%", (double) invoiceSummary.getRejectedInvoices() / invoiceSummary.getTotalInvoices() * 100));//拒绝率
+        approvalStatusRatio.setManualReview(String.format("%.2f%%", (double) invoiceSummary.getInvoicesSentforManualReview() / invoiceSummary.getTotalInvoices() * 100));//人工审批率
+        invoiceSummary.setApprovalStatusRatio(approvalStatusRatio);
+        jsonObject.clear();
+        jsonObject.put("InvoiceApprovalSummary", invoiceSummary);
+        fileWriter.write(JSON.toJSONString(jsonObject));
+        fileWriter.close();
+    }
+    private void classifyCustomer(List<Customer> customerList) {
+        int size = customerList.size();
+
+        // 1. 根据amount排序并计算评分
+        List<Customer> sortedByAmount = new ArrayList<>(customerList);
+        sortedByAmount.sort(Comparator.comparingInt(Customer::getAmount).reversed());
+        double[] amountScores = new double[size];
+        for (int i = 0; i < size; i++) {
+            amountScores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+        }
+
+        // 2. 根据count排序并计算评分
+        List<Customer> sortedByCount = new ArrayList<>(customerList);
+        sortedByCount.sort(Comparator.comparingInt(Customer::getCount).reversed());
+        double[] countScores = new double[size];
+        for (int i = 0; i < size; i++) {
+            countScores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+        }
+
+        // 3. 计算加权平均得分
+        double[] finalScores = new double[size];
+        double amountWeight = 0.7;
+        double countWeight = 0.3;
+        for (int i = 0; i < size; i++) {
+            finalScores[i] = amountWeight * amountScores[i] + countWeight * countScores[i];
+        }
+
+        // 4. 将客户与最终得分关联
+        for (int i = 0; i < size; i++) {
+            customerList.get(i).setScore(finalScores[i]);
+        }
+
+        // 5. 根据最终得分排序
+        customerList.sort(Comparator.comparingDouble(Customer::getScore).reversed());
+
+        // 6. 分类
+        int threshold1 = size / 4; // 前25%
+        int threshold2 = size * 3 / 4; // 中间50%
+
+        for (int i = 0; i < size; i++) {
+            String category;
+            if (i < threshold1) {
+                category = "重要客户";
+            } else if (i < threshold2) {
+                category = "普通客户";
+            } else {
+                category = "小客户";
+            }
+            customers.get(i).setType(category);
+        }
+        customerRepo.saveAll(customers);
+    }
+    private void classifySupplier(List<Supplier> supplierList) {
+        int size = supplierList.size();
+
+        // 1. 根据amount排序并计算评分
+        List<Supplier> sortedByAmount = new ArrayList<>(supplierList);
+        sortedByAmount.sort(Comparator.comparingInt(Supplier::getAmount).reversed());
+        double[] amountScores = new double[size];
+        for (int i = 0; i < size; i++) {
+            amountScores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+        }
+
+        // 2. 根据count排序并计算评分
+        List<Supplier> sortedByCount = new ArrayList<>(supplierList);
+        sortedByCount.sort(Comparator.comparingInt(Supplier::getCount).reversed());
+        double[] countScores = new double[size];
+        for (int i = 0; i < size; i++) {
+            countScores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+        }
+
+        // 3. 计算加权平均得分
+        double[] finalScores = new double[size];
+        double amountWeight = 0.7;
+        double countWeight = 0.3;
+        for (int i = 0; i < size; i++) {
+            finalScores[i] = amountWeight * amountScores[i] + countWeight * countScores[i];
+        }
+
+        // 4. 将供应商与最终得分关联
+        for (int i = 0; i < size; i++) {
+            supplierList.get(i).setScore(finalScores[i]);
+        }
+
+        // 5. 根据最终得分排序
+        supplierList.sort(Comparator.comparingDouble(Supplier::getScore).reversed());
+
+        // 6. 分类
+        int threshold1 = size / 4; // 前25%
+        int threshold2 = size * 3 / 4; // 中间50%
+
+        for (int i = 0; i < size; i++) {
+            String category;
+            if (i < threshold1) {
+                category = "重要供应商";
+            } else if (i < threshold2) {
+                category = "普通供应商";
+            } else {
+                category = "小供应商";
+            }
+            suppliers.get(i).setType(category);
+        }
+        supplierRepo.saveAll(suppliers);
     }
 }

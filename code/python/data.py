@@ -8,11 +8,6 @@ class APP:
 # 创建 APP 实例并存储在列表中
 APP_list = [
     APP(
-        APPId="21a88706",
-        APIKey="0833dd9079a62a37c815ab82c0fd96fa",
-        APISecret="NWI3ZTFiNzVlOWQ1ZDEyOTc3YjVmODkx",
-    ),
-    APP(
         APPId="5fb8d78a",
         APIKey="8dca7165cff031a03e634121a3469261",
         APISecret="NTllNmU5YmJjZmEwZGUwNTdlYzg5Njg3",
