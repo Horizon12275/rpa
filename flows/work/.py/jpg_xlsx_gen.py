@@ -9,15 +9,10 @@ with open('./.json/invoice.json', 'r', encoding='utf-8') as file:
 manual_review_data = []
 
 for invoice in invoice_data:
-    if invoice['approval_status'] == 'Manual Review':
+    if invoice['status'] == '人工审批':
         manual_review_data.append({
-<<<<<<< Updated upstream
-            'ImageURL': invoice['img_url'],
-            'ManualReviewReason': invoice['manual_review_reason']
-=======
-            'Image URL': invoice['imageUri'],
-            'Manual Review Reason': invoice['remark']
->>>>>>> Stashed changes
+            'ImageURL': invoice['imageUri'],
+            'ManualReviewReason': invoice['remark']
         })
 
 # 把里面的列名改成中文

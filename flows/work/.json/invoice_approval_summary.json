@@ -1,19 +1,18 @@
 {
-    "InvoiceApprovalSummary": {
-      "TotalInvoices": 1000,
-      "ApprovedInvoices": 700,
-      "RejectedInvoices": 200,
-      "InvoicesSentforManualReview": 100,
-      "ApprovalStatusRatio": {
-        "Approved": "70%",
-        "Rejected": "20%",
-        "ManualReview": "10%"
-      },
-      "MaximumInvoiceAmount": 50000,
-      "MinimumInvoiceAmount": 100,
-      "AverageInvoiceAmount": 1500,
-      "MostCommonReasonforManualReview": "Low Image Recognition",
-      "DuplicateInvoiceCount": 1
-    }
+  "InvoiceApprovalSummary": {
+    "approvalStatusRatio": {
+      "approved": "1.25%",
+      "manualReview": "43.93%",
+      "rejected": "54.83%"
+    },
+    "approvedInvoices": 4,
+    "averageInvoiceAmount": 3215,
+    "duplicateInvoiceCount": 0,
+    "invoicesSentforManualReview": 141,
+    "maximumInvoiceAmount": 7495,
+    "minimumInvoiceAmount": 200,
+    "mostCommonReasonforManualReview": "无法识别发票 错误码：{10909} 人工审批",
+    "rejectedInvoices": 176,
+    "totalInvoices": 321
+  }
 }
-  
