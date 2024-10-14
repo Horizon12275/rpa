@@ -13,7 +13,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -55,6 +54,7 @@ public class RpaApplication implements CommandLineRunner {
 //        data.addAll(readData());
 //        parseData();
         saveData();
+        System.exit(0);
     }
 
     private List<JSONObject> readData() {
@@ -295,6 +295,8 @@ public class RpaApplication implements CommandLineRunner {
                 invoiceDTO.setRemark(invoice.getRemark());
             if (invoice.getNumber() != null)
                 invoiceDTO.setNumber(invoice.getNumber());
+            if (invoice.getImageUri() != null)
+                invoiceDTO.setImageUri(invoice.getImageUri());
             invoiceDTOS.add(invoiceDTO);
         }
         fileWriter.write(JSON.toJSONString(invoiceDTOS));
@@ -350,17 +352,23 @@ public class RpaApplication implements CommandLineRunner {
         // 1. 根据amount排序并计算评分
         List<Customer> sortedByAmount = new ArrayList<>(customerList);
         sortedByAmount.sort(Comparator.comparingInt(Customer::getAmount).reversed());
+        double[] tmp = new double[size];
         double[] amountScores = new double[size];
+        RpaApplication.calculateCustomerScores(sortedByAmount, tmp, "amount");
         for (int i = 0; i < size; i++) {
-            amountScores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+            int index = customerList.indexOf(sortedByAmount.get(i));
+            amountScores[index] = tmp[i];
         }
 
         // 2. 根据count排序并计算评分
         List<Customer> sortedByCount = new ArrayList<>(customerList);
         sortedByCount.sort(Comparator.comparingInt(Customer::getCount).reversed());
         double[] countScores = new double[size];
+        tmp = new double[size]; // 重置tmp
+        RpaApplication.calculateCustomerScores(sortedByCount, tmp, "count");
         for (int i = 0; i < size; i++) {
-            countScores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+            int index = customerList.indexOf(sortedByCount.get(i));
+            countScores[index] = tmp[i];
         }
 
         // 3. 计算加权平均得分
@@ -369,6 +377,7 @@ public class RpaApplication implements CommandLineRunner {
         double countWeight = 0.3;
         for (int i = 0; i < size; i++) {
             finalScores[i] = amountWeight * amountScores[i] + countWeight * countScores[i];
+            System.out.println(sortedByAmount.get(i).getName() + " 最终得分: " + finalScores[i]);
         }
 
         // 4. 将客户与最终得分关联
@@ -386,15 +395,29 @@ public class RpaApplication implements CommandLineRunner {
         for (int i = 0; i < size; i++) {
             String category;
             if (i < threshold1) {
-                category = "重要客户";
+                category = "大客户";
             } else if (i < threshold2) {
-                category = "普通客户";
+                category = "客户";
             } else {
-                category = "小客户";
+                category = "一般客户";
             }
             customers.get(i).setType(category);
         }
         customerRepo.saveAll(customers);
+    }
+    private static void calculateCustomerScores(List<Customer> sortedCustomers, double[] scores, String by) {
+        int size = sortedCustomers.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0 && by == "amount" && sortedCustomers.get(i).getAmount() == sortedCustomers.get(i - 1).getAmount() ||
+                    i > 0 && by == "count" && sortedCustomers.get(i).getCount() == sortedCustomers.get(i - 1).getCount()) {
+                // 如果相等，分数与前一个相同
+                scores[i] = scores[i - 1];
+            } else {
+                // 否则，根据当前排名计算分数
+                scores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+                System.out.println(sortedCustomers.get(i).getName() + " Score: " + scores[i]);
+            }
+        }
     }
     private void classifySupplier(List<Supplier> supplierList) {
         int size = supplierList.size();
@@ -402,17 +425,23 @@ public class RpaApplication implements CommandLineRunner {
         // 1. 根据amount排序并计算评分
         List<Supplier> sortedByAmount = new ArrayList<>(supplierList);
         sortedByAmount.sort(Comparator.comparingInt(Supplier::getAmount).reversed());
+        double[] tmp = new double[size];
+        RpaApplication.calculateSupplierScores(sortedByAmount, tmp, "amount");
         double[] amountScores = new double[size];
         for (int i = 0; i < size; i++) {
-            amountScores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+            int index = supplierList.indexOf(sortedByAmount.get(i));
+            amountScores[index] = tmp[i];
         }
 
         // 2. 根据count排序并计算评分
         List<Supplier> sortedByCount = new ArrayList<>(supplierList);
         sortedByCount.sort(Comparator.comparingInt(Supplier::getCount).reversed());
         double[] countScores = new double[size];
+        tmp=new double[size];// 重置tmp
+        RpaApplication.calculateSupplierScores(sortedByCount, tmp, "count");
         for (int i = 0; i < size; i++) {
-            countScores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+            int index = supplierList.indexOf(sortedByCount.get(i));
+            countScores[index] = tmp[i];
         }
 
         // 3. 计算加权平均得分
@@ -421,6 +450,7 @@ public class RpaApplication implements CommandLineRunner {
         double countWeight = 0.3;
         for (int i = 0; i < size; i++) {
             finalScores[i] = amountWeight * amountScores[i] + countWeight * countScores[i];
+            System.out.println(supplierList.get(i).getName() + " 最终得分: " + finalScores[i]);
         }
 
         // 4. 将供应商与最终得分关联
@@ -438,14 +468,28 @@ public class RpaApplication implements CommandLineRunner {
         for (int i = 0; i < size; i++) {
             String category;
             if (i < threshold1) {
-                category = "重要供应商";
+                category = "大供应商";
             } else if (i < threshold2) {
-                category = "普通供应商";
+                category = "供应商";
             } else {
-                category = "小供应商";
+                category = "一般供应商";
             }
             suppliers.get(i).setType(category);
         }
         supplierRepo.saveAll(suppliers);
+    }
+    private static void calculateSupplierScores(List<Supplier> sortedSuppliers, double[] scores, String by) {
+        int size = sortedSuppliers.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0 && by == "amount" && sortedSuppliers.get(i).getAmount() == sortedSuppliers.get(i - 1).getAmount() ||
+                    i > 0 && by == "count" && sortedSuppliers.get(i).getCount() == sortedSuppliers.get(i - 1).getCount()) {
+                // 如果相等，分数与前一个相同
+                scores[i] = scores[i - 1];
+            } else {
+                // 否则，根据当前排名计算分数
+                scores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+            }
+            System.out.println(sortedSuppliers.get(i).getName() + " Score: " + scores[i]);
+        }
     }
 }
