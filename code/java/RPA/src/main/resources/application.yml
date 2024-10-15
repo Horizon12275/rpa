@@ -1,5 +1,5 @@
 file:
-  path: "/data.json"
+  path: "data.json"
 
 spring:
   datasource:

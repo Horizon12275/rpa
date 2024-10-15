@@ -3,6 +3,7 @@ package org.example.rpa;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.example.rpa.entity.*;
 import org.example.rpa.entity.DTO.InvoiceDTO;
 import org.example.rpa.entity.DTO.InvoiceSummary;
@@ -17,13 +18,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.*;
+
 
 @SpringBootApplication
 public class RpaApplication implements CommandLineRunner {
     @Value("${file.path}")
-    private String filePath = "/data.json";
+    private String filePath = "data.json";
     private final List<JSONObject> data = new ArrayList<>();
     private final List<Customer> customers=new ArrayList<>();
     private final List<Supplier> suppliers=new ArrayList<>();
@@ -47,19 +52,31 @@ public class RpaApplication implements CommandLineRunner {
         this.frequencyRepo = frequencyRepo;
     }
     public static void main(String[] args) {
+        Dotenv dotenv = Dotenv.load(); // 加载 .env 文件
+        // 将环境变量设置为系统属性
+        System.setProperty("S3_BUCKET_NAME", dotenv.get("S3_BUCKET_NAME"));
+        System.setProperty("S3_ACCESS_KEY", dotenv.get("S3_ACCESS_KEY"));
+        System.setProperty("S3_SECRET_KEY", dotenv.get("S3_SECRET_KEY"));
+        System.setProperty("S3_ENDPOINT", dotenv.get("S3_ENDPOINT"));
+        System.setProperty("S3_REGION", dotenv.get("S3_REGION"));
+        System.setProperty("S3_DOMAIN", dotenv.get("S3_DOMAIN"));
+        System.setProperty("DB_URL", dotenv.get("DB_URL"));
+        System.setProperty("DB_USERNAME", dotenv.get("DB_USERNAME"));
+        System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
+
         SpringApplication.run(RpaApplication.class, args);
     }
     @Override
     public void run(String... args) throws Exception {
-//        data.addAll(readData());
-//        parseData();
+        data.addAll(readData());
+        parseData();
         saveData();
         System.exit(0);
     }
 
     private List<JSONObject> readData() {
         System.out.println("Reading data from file: " + filePath);
-        try (InputStream inputStream = getClass().getResourceAsStream(filePath)){
+        try (InputStream inputStream = new FileInputStream(filePath)) {
             if (inputStream == null) {
                 System.out.println("File not found");
             }
@@ -71,8 +88,16 @@ public class RpaApplication implements CommandLineRunner {
         return null;
     }
     // 将file转换为multipartFile并上传 返回url
-    private String uploadFile(String filePath,Integer dataSet) throws IOException {
-        filePath="../../python/input/"+dataSet.toString()+"/"+filePath; // 修正路径为../../python/input/1/xxx.jpg
+    private String uploadFile(String filePath,Integer dataSet,int status) throws IOException {
+        String fileName = filePath;//文件名
+        filePath="../input/"+dataSet.toString()+"/"+fileName; // 修正路径为../input/dataSet/fileName
+
+        //把人工审批的发票导出到指定文件夹
+        if (status == 3) {
+            Files.copy(Paths.get(filePath), Paths.get("../.jpg/待人工审批发票/"+fileName), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+
         File file = new File(filePath);
         if (!file.exists()) {
             throw new IOException("File not found: " + filePath);
@@ -90,7 +115,7 @@ public class RpaApplication implements CommandLineRunner {
                 Invoice invoice = new Invoice();
                 invoice.setStatus(3); // 人工审批
                 invoice.setRemark("无法识别发票 错误码：{" + code + "} 人工审批");
-                invoice.setImageUri(uploadFile(fileName,dataSet));
+                invoice.setImageUri(uploadFile(fileName,dataSet,3));
                 invoice.setFileName(fileName);
                 invoiceRepo.save(invoice);
                 continue;
@@ -105,7 +130,7 @@ public class RpaApplication implements CommandLineRunner {
             int type = result.getIntValue("invoiceType");
             if (Arrays.stream(invoiceTypes).noneMatch(i -> i == type)) { // 非发票
                 NonInvoice nonInvoice = new NonInvoice();
-                nonInvoice.setImageUri(uploadFile(fileName,dataSet));
+                nonInvoice.setImageUri(uploadFile(fileName,dataSet,0));
                 nonInvoice.setFileName(fileName);
                 nonInvoiceRepo.save(nonInvoice);
             } else { // 发票
@@ -121,7 +146,7 @@ public class RpaApplication implements CommandLineRunner {
                 Integer amount = result.getInteger("amountTax");//金额
                 filter(amount,supplierName,customerName,dateStr,invoice);
                 if (invoice.getStatus()!=null && invoice.getStatus() == 3) { // 人工审批
-                    invoice.setImageUri(uploadFile(fileName,dataSet));
+                    invoice.setImageUri(uploadFile(fileName,dataSet,3));
                     invoice.setFileName(fileName);
                     invoiceRepo.save(invoice);
                     continue;
@@ -167,7 +192,7 @@ public class RpaApplication implements CommandLineRunner {
 
                 //进行审批
                 approve(dataSet,invoice);
-                invoice.setImageUri(uploadFile(fileName,dataSet));
+                invoice.setImageUri(uploadFile(fileName,dataSet,invoice.getStatus()));
                 invoice.setFileName(fileName);
                 invoiceRepo.save(invoice);
             }
@@ -263,20 +288,20 @@ public class RpaApplication implements CommandLineRunner {
     // 导出数据
 
     protected void saveData() throws IOException {
-        FileWriter fileWriter = new FileWriter("buyer.json");
+        FileWriter fileWriter = new FileWriter("../.json/buyer.json");
         // customers
         customers.addAll(customerRepo.findAll());
         classifyCustomer(customers);
         fileWriter.write(JSON.toJSONString(customers));
         fileWriter.close();
         // suppliers
-        fileWriter = new FileWriter("seller.json");
+        fileWriter = new FileWriter("../.json/seller.json");
         suppliers.addAll(supplierRepo.findAll());
         classifySupplier(suppliers);
         fileWriter.write(JSON.toJSONString(suppliers));
         fileWriter.close();
         // invoices
-        fileWriter = new FileWriter("invoice.json");
+        fileWriter = new FileWriter("../.json/invoice.json");
         invoices.addAll(invoiceRepo.findAll());
         List<InvoiceDTO> invoiceDTOS = new ArrayList<>();
         for (Invoice invoice : invoices) {
@@ -302,7 +327,7 @@ public class RpaApplication implements CommandLineRunner {
         fileWriter.write(JSON.toJSONString(invoiceDTOS));
         fileWriter.close();
         // transaction summary
-        fileWriter = new FileWriter("transaction_summary.json");
+        fileWriter = new FileWriter("../.json/transaction_summary.json");
         TransactionSummary transactionSummary = new TransactionSummary();
         transactionSummary.setMajor_clients(customers.stream().filter(c -> c.getType().equals("重要客户")).map(Customer::getName).toArray(String[]::new));
         transactionSummary.setClients(customers.stream().filter(c -> c.getType().equals("普通客户")).map(Customer::getName).toArray(String[]::new));
@@ -320,11 +345,11 @@ public class RpaApplication implements CommandLineRunner {
             transactionSummary.setMost_frequent_transaction_relationship(relation);
         }
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("transaction_summary", transactionSummary);
+        jsonObject.put("../.json/transaction_summary", transactionSummary);
         fileWriter.write(JSON.toJSONString(jsonObject));
         fileWriter.close();
         // invoice summary
-        fileWriter = new FileWriter("invoice_approval_summary.json");
+        fileWriter = new FileWriter("../.json/invoice_approval_summary.json");
         InvoiceSummary invoiceSummary = new InvoiceSummary();
         invoiceSummary.setTotalInvoices(invoices.size());
         invoiceSummary.setApprovedInvoices((int) invoices.stream().filter(i -> i.getStatus() == 1).count());
@@ -345,6 +370,7 @@ public class RpaApplication implements CommandLineRunner {
         jsonObject.put("InvoiceApprovalSummary", invoiceSummary);
         fileWriter.write(JSON.toJSONString(jsonObject));
         fileWriter.close();
+
     }
     private void classifyCustomer(List<Customer> customerList) {
         int size = customerList.size();
