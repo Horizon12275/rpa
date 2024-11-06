@@ -77,13 +77,10 @@ public class RpaApplication implements CommandLineRunner {
     private List<JSONObject> readData() {
         System.out.println("Reading data from file: " + filePath);
         try (InputStream inputStream = new FileInputStream(filePath)) {
-            if (inputStream == null) {
-                System.out.println("File not found");
-            }
             String json = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             return JSON.parseArray(json, JSONObject.class);
         } catch (Exception e) {
-            System.out.println("Error reading file");
+            System.out.println("Error reading file: " + e.getMessage());
         }
         return null;
     }
