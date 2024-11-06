@@ -18,30 +18,28 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.*;
 
 
 @SpringBootApplication
 public class RpaApplication implements CommandLineRunner {
-    @Value("${file.path}")
-    private String filePath = "data.json";
     private final List<JSONObject> data = new ArrayList<>();
-    private final List<Customer> customers=new ArrayList<>();
-    private final List<Supplier> suppliers=new ArrayList<>();
-    private final List<Invoice> invoices=new ArrayList<>();
-    private final List<NonInvoice> nonInvoices=new ArrayList<>();
-    private int duplicateNum = 0;
-    private final int[] invoiceTypes = {1,4,14,11,24,25,28,8,3,36,10,15,23,21,9};
+    private final List<Customer> customers = new ArrayList<>();
+    private final List<Supplier> suppliers = new ArrayList<>();
+    private final List<Invoice> invoices = new ArrayList<>();
+    private final List<NonInvoice> nonInvoices = new ArrayList<>();
+    private final int[] invoiceTypes = {1, 4, 14, 11, 24, 25, 28, 8, 3, 36, 10, 15, 23, 21, 9};
     private final UploadRepo uploadRepo;
     private final CustomerRepo customerRepo;
     private final SupplierRepo supplierRepo;
     private final InvoiceRepo invoiceRepo;
     private final NonInvoiceRepo nonInvoiceRepo;
     private final FrequencyRepo frequencyRepo;
+    @Value("${file.path}")
+    private String filePath = "data.json";
+    private int duplicateNum = 0;
 
     public RpaApplication(UploadRepo uploadRepo, CustomerRepo customerRepo, SupplierRepo supplierRepo, InvoiceRepo invoiceRepo, NonInvoiceRepo nonInvoiceRepo, FrequencyRepo frequencyRepo) {
         this.uploadRepo = uploadRepo;
@@ -51,6 +49,7 @@ public class RpaApplication implements CommandLineRunner {
         this.nonInvoiceRepo = nonInvoiceRepo;
         this.frequencyRepo = frequencyRepo;
     }
+
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.load(); // 加载 .env 文件
         // 将环境变量设置为系统属性
@@ -66,6 +65,37 @@ public class RpaApplication implements CommandLineRunner {
 
         SpringApplication.run(RpaApplication.class, args);
     }
+
+    private static void calculateCustomerScores(List<Customer> sortedCustomers, double[] scores, String by) {
+        int size = sortedCustomers.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0 && by == "amount" && sortedCustomers.get(i).getAmount() == sortedCustomers.get(i - 1).getAmount() ||
+                    i > 0 && by == "count" && sortedCustomers.get(i).getCount() == sortedCustomers.get(i - 1).getCount()) {
+                // 如果相等，分数与前一个相同
+                scores[i] = scores[i - 1];
+            } else {
+                // 否则，根据当前排名计算分数
+                scores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+                System.out.println(sortedCustomers.get(i).getName() + " Score: " + scores[i]);
+            }
+        }
+    }
+
+    private static void calculateSupplierScores(List<Supplier> sortedSuppliers, double[] scores, String by) {
+        int size = sortedSuppliers.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0 && by == "amount" && sortedSuppliers.get(i).getAmount() == sortedSuppliers.get(i - 1).getAmount() ||
+                    i > 0 && by == "count" && sortedSuppliers.get(i).getCount() == sortedSuppliers.get(i - 1).getCount()) {
+                // 如果相等，分数与前一个相同
+                scores[i] = scores[i - 1];
+            } else {
+                // 否则，根据当前排名计算分数
+                scores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
+            }
+            System.out.println(sortedSuppliers.get(i).getName() + " Score: " + scores[i]);
+        }
+    }
+
     @Override
     public void run(String... args) throws Exception {
         data.addAll(readData());
@@ -84,14 +114,28 @@ public class RpaApplication implements CommandLineRunner {
         }
         return null;
     }
+
     // 将file转换为multipartFile并上传 返回url
-    private String uploadFile(String filePath,Integer dataSet,int status) throws IOException {
+    private String uploadFile(String filePath, Integer dataSet, int status) throws IOException {
         String fileName = filePath;//文件名
-        filePath="../input/"+dataSet.toString()+"/"+fileName; // 修正路径为../input/dataSet/fileName
+        filePath = "../input/" + dataSet.toString() + "/" + fileName; // 修正路径为../input/dataSet/fileName
+
+        //删除待人工审批发票文件夹下的所有文件
+        Path path = Paths.get("../.jpg/待人工审批发票/");
+        if (Files.exists(path) && Files.isDirectory(path)) {
+            // 遍历目录，删除所有文件
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+                for (Path entry : stream) {
+                    Files.delete(entry); // 删除文件
+                }
+            }
+        } else {
+            System.out.println("目录不存在或不是有效的目录");
+        }
 
         //把人工审批的发票导出到指定文件夹
         if (status == 3) {
-            Files.copy(Paths.get(filePath), Paths.get("../.jpg/待人工审批发票/"+fileName), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(filePath), Paths.get("../.jpg/待人工审批发票/" + fileName), StandardCopyOption.REPLACE_EXISTING);
         }
 
 
@@ -103,16 +147,17 @@ public class RpaApplication implements CommandLineRunner {
         MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(), "image/jpeg", fileInputStream);
         return uploadRepo.uploadFile(multipartFile, "image");
     }
-    private void parseData() throws IOException{
+
+    private void parseData() throws IOException {
         for (JSONObject json : data) {
             int code = json.getJSONObject("header").getIntValue("code"); // 错误码
             int dataSet = json.getIntValue("data_set"); // 数据集类型
             String fileName = json.getString("file_name");
-            if (code != 0){ // 有错误码
+            if (code != 0) { // 有错误码
                 Invoice invoice = new Invoice();
                 invoice.setStatus(3); // 人工审批
                 invoice.setRemark("无法识别发票 错误码：{" + code + "} 人工审批");
-                invoice.setImageUri(uploadFile(fileName,dataSet,3));
+                invoice.setImageUri(uploadFile(fileName, dataSet, 3));
                 invoice.setFileName(fileName);
                 invoiceRepo.save(invoice);
                 continue;
@@ -120,14 +165,14 @@ public class RpaApplication implements CommandLineRunner {
             // 获取base64编码的结果
             String base64 = json.getJSONObject("payload").getJSONObject("output_text_result").getString("text");
             JSONObject result = JSON.parseArray(new String(java.util.Base64.getDecoder().decode(base64))).getJSONObject(0);
-            if (result.containsKey("invoice")){
-                result=result.getJSONObject("invoice"); // 有invoice字段
+            if (result.containsKey("invoice")) {
+                result = result.getJSONObject("invoice"); // 有invoice字段
             }
             System.out.println(result.toJSONString());
             int type = result.getIntValue("invoiceType");
             if (Arrays.stream(invoiceTypes).noneMatch(i -> i == type)) { // 非发票
                 NonInvoice nonInvoice = new NonInvoice();
-                nonInvoice.setImageUri(uploadFile(fileName,dataSet,0));
+                nonInvoice.setImageUri(uploadFile(fileName, dataSet, 0));
                 nonInvoice.setFileName(fileName);
                 nonInvoiceRepo.save(nonInvoice);
             } else { // 发票
@@ -141,9 +186,9 @@ public class RpaApplication implements CommandLineRunner {
                 String supplierName = result.getString("salesName");//供应商名称
                 String customerName = result.getString("purchaserName");//客户名称
                 Integer amount = result.getInteger("amountTax");//金额
-                filter(amount,supplierName,customerName,dateStr,invoice);
-                if (invoice.getStatus()!=null && invoice.getStatus() == 3) { // 人工审批
-                    invoice.setImageUri(uploadFile(fileName,dataSet,3));
+                filter(amount, supplierName, customerName, dateStr, invoice);
+                if (invoice.getStatus() != null && invoice.getStatus() == 3) { // 人工审批
+                    invoice.setImageUri(uploadFile(fileName, dataSet, 3));
                     invoice.setFileName(fileName);
                     invoiceRepo.save(invoice);
                     continue;
@@ -188,15 +233,17 @@ public class RpaApplication implements CommandLineRunner {
                 frequencyRepo.save(frequency);
 
                 //进行审批
-                approve(dataSet,invoice);
-                invoice.setImageUri(uploadFile(fileName,dataSet,invoice.getStatus()));
+                approve(dataSet, invoice);
+                invoice.setImageUri(uploadFile(fileName, dataSet, invoice.getStatus()));
                 invoice.setFileName(fileName);
                 invoiceRepo.save(invoice);
             }
         }
     }
+    // 导出数据
+
     //筛选出无法识别字段的发票 转为人工审批
-    private void filter(Integer amount, String supplierName, String customerName, String dateStr,Invoice invoice){
+    private void filter(Integer amount, String supplierName, String customerName, String dateStr, Invoice invoice) {
         if (amount == null || amount <= 0) {
             invoice.setStatus(3);
             invoice.setRemark("无法识别金额 人工审批");
@@ -220,35 +267,34 @@ public class RpaApplication implements CommandLineRunner {
         LocalDate date = null;
         try {
             date = LocalDate.parse(dateStr);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             invoice.setStatus(3);
             invoice.setRemark("无法识别开票日期 人工审批");
         }
         invoice.setDate(date);
     }
+
     // 审批通过识别的发票 dataSet是数据集类型
-    private void approve(int dataSet,Invoice invoice){
+    private void approve(int dataSet, Invoice invoice) {
         if (dataSet == 1) {
             Customer customer = invoice.getCustomer();
             String customerName = customer.getName();
             if (!Objects.equals(customerName, "浙江大学")) {
-                int same=customerName.contains("浙")?1:0;
-                same+=customerName.contains("江")?1:0;
-                same+=customerName.contains("大")?1:0;
-                same+=customerName.contains("学")?1:0;
-                if (same<3) { // 名字至少包含3个字
+                int same = customerName.contains("浙") ? 1 : 0;
+                same += customerName.contains("江") ? 1 : 0;
+                same += customerName.contains("大") ? 1 : 0;
+                same += customerName.contains("学") ? 1 : 0;
+                if (same < 3) { // 名字至少包含3个字
                     invoice.setStatus(2);
                     invoice.setRemark("付款方不是浙江大学");
-                }
-                else {
+                } else {
                     invoice.setStatus(3);
                     invoice.setRemark("付款方疑似识别不清 人工审批");
                 }
                 return;
             }
             LocalDate date = invoice.getDate();
-            if (date.getYear()!=2015){
+            if (date.getYear() != 2015) {
                 invoice.setStatus(2);
                 invoice.setRemark("开票日期不是2015年");
                 return;
@@ -260,7 +306,7 @@ public class RpaApplication implements CommandLineRunner {
             }
             invoice.setStatus(1);
         }
-        if (dataSet == 2){
+        if (dataSet == 2) {
             Customer customer = invoice.getCustomer();
             String customerName = customer.getName();
             if (!Objects.equals(customerName, "深圳市购机汇网络有限公司")) {
@@ -282,7 +328,6 @@ public class RpaApplication implements CommandLineRunner {
             invoice.setStatus(1);
         }
     }
-    // 导出数据
 
     protected void saveData() throws IOException {
         FileWriter fileWriter = new FileWriter("../.json/buyer.json");
@@ -369,6 +414,7 @@ public class RpaApplication implements CommandLineRunner {
         fileWriter.close();
 
     }
+
     private void classifyCustomer(List<Customer> customerList) {
         int size = customerList.size();
 
@@ -428,20 +474,7 @@ public class RpaApplication implements CommandLineRunner {
         }
         customerRepo.saveAll(customers);
     }
-    private static void calculateCustomerScores(List<Customer> sortedCustomers, double[] scores, String by) {
-        int size = sortedCustomers.size();
-        for (int i = 0; i < size; i++) {
-            if (i > 0 && by == "amount" && sortedCustomers.get(i).getAmount() == sortedCustomers.get(i - 1).getAmount() ||
-                    i > 0 && by == "count" && sortedCustomers.get(i).getCount() == sortedCustomers.get(i - 1).getCount()) {
-                // 如果相等，分数与前一个相同
-                scores[i] = scores[i - 1];
-            } else {
-                // 否则，根据当前排名计算分数
-                scores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
-                System.out.println(sortedCustomers.get(i).getName() + " Score: " + scores[i]);
-            }
-        }
-    }
+
     private void classifySupplier(List<Supplier> supplierList) {
         int size = supplierList.size();
 
@@ -460,7 +493,7 @@ public class RpaApplication implements CommandLineRunner {
         List<Supplier> sortedByCount = new ArrayList<>(supplierList);
         sortedByCount.sort(Comparator.comparingInt(Supplier::getCount).reversed());
         double[] countScores = new double[size];
-        tmp=new double[size];// 重置tmp
+        tmp = new double[size];// 重置tmp
         RpaApplication.calculateSupplierScores(sortedByCount, tmp, "count");
         for (int i = 0; i < size; i++) {
             int index = supplierList.indexOf(sortedByCount.get(i));
@@ -500,19 +533,5 @@ public class RpaApplication implements CommandLineRunner {
             suppliers.get(i).setType(category);
         }
         supplierRepo.saveAll(suppliers);
-    }
-    private static void calculateSupplierScores(List<Supplier> sortedSuppliers, double[] scores, String by) {
-        int size = sortedSuppliers.size();
-        for (int i = 0; i < size; i++) {
-            if (i > 0 && by == "amount" && sortedSuppliers.get(i).getAmount() == sortedSuppliers.get(i - 1).getAmount() ||
-                    i > 0 && by == "count" && sortedSuppliers.get(i).getCount() == sortedSuppliers.get(i - 1).getCount()) {
-                // 如果相等，分数与前一个相同
-                scores[i] = scores[i - 1];
-            } else {
-                // 否则，根据当前排名计算分数
-                scores[i] = (double) (size - i - 1) / (size - 1) * 100; // 0到100评分
-            }
-            System.out.println(sortedSuppliers.get(i).getName() + " Score: " + scores[i]);
-        }
     }
 }
