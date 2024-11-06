@@ -417,6 +417,12 @@ public class RpaApplication implements CommandLineRunner {
 
     private void classifyCustomer(List<Customer> customerList) {
         int size = customerList.size();
+        if (size == 1) {
+            Customer customer = customerList.get(0);
+            customer.setType("客户");
+            customerRepo.save(customer);
+            return;
+        }
 
         // 1. 根据amount排序并计算评分
         List<Customer> sortedByAmount = new ArrayList<>(customerList);
@@ -477,6 +483,12 @@ public class RpaApplication implements CommandLineRunner {
 
     private void classifySupplier(List<Supplier> supplierList) {
         int size = supplierList.size();
+        if(size == 1){
+            Supplier supplier = supplierList.get(0);
+            supplier.setType("供应商");
+            supplierRepo.save(supplier);
+            return;
+        }
 
         // 1. 根据amount排序并计算评分
         List<Supplier> sortedByAmount = new ArrayList<>(supplierList);
