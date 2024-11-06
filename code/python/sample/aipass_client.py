@@ -35,8 +35,6 @@ def prepare_req_data(request_data):
 
 # 执行http请求
 def execute(request_url, request_data, method, app_id, api_key, api_secret, response_json):
-    # 清除文件
-    ne_utils.del_file("./resource/output")
 
     # 获取请求url
     auth_request_url = ne_utils.build_auth_request_url(

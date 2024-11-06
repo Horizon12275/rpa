@@ -40,9 +40,9 @@ if __name__ == "__main__":
                 cnt += 1  # 用于循环使用APP_list中的不同KEY
                 i += 1
 
-    # ocr("input/1", 1)
-    # ocr("input/2", 2)
-    ocr("../../flows/work/input/test", 1)
+    ocr("../../flows/work/input/1", 1)
+    ocr("../../flows/work/input/2", 2)
+    #ocr("../../flows/work/input/test", 2)
 
     with open("../../flows/work/.jar/data.json", "a") as json_file:
         json.dump(response_list, json_file, ensure_ascii=False)

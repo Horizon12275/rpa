@@ -1,6 +1,7 @@
 import json
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 
 # 设置字体为黑体
@@ -57,12 +58,18 @@ def plot_invoice_distribution(file_path, save_path):
     bins = np.arange(0, max(amounts) + 500, 500)
 
     # 绘制柱状图
-    plt.hist(amounts, bins=bins, edgecolor='black')
+    plt.hist(amounts, bins=bins, edgecolor='black', histtype='bar')
 
     # 设置标题和标签
     plt.title('发票金额分布', fontsize=20)
     plt.xlabel('金额区间 (元)', fontsize=14)
     plt.ylabel('发票数量', fontsize=14)
+
+    # 设置 y 轴的刻度为整数
+    plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    # 设置 x 轴的刻度为500的倍数
+    plt.xticks(np.arange(0, max(amounts) + 500, 500))
 
     # 显示网格
     plt.grid(axis='y', alpha=0.75)

@@ -101,7 +101,7 @@ def write_invoice_approval_summary_to_excel(json_file, output_file):
         'approvedInvoices': '通过发票数量',
         'rejectedInvoices': '不通过发票数量',
         'invoicesSentforManualReview': '转人工审批发票数量',
-        'approvalStatusRatio': '审批状态比例',
+        'approvalStatusRatio': '审批状态比例（通过/未通过/转人工）',
         'maximumInvoiceAmount': '发票最大金额',
         'minimumInvoiceAmount': '发票最小金额',
         'averageInvoiceAmount': '发票平均金额',
@@ -115,7 +115,7 @@ def write_invoice_approval_summary_to_excel(json_file, output_file):
         '通过发票数量',
         '不通过发票数量',
         '转人工审批发票数量',
-        '审批状态比例',
+        '审批状态比例（通过/未通过/转人工）',
         '发票最大金额',
         '发票最小金额',
         '发票平均金额',
@@ -132,7 +132,7 @@ def write_invoice_approval_summary_to_excel(json_file, output_file):
     # 把审批状态比例的值，从字典转换为字符串
     approval_status_ratio = invoice_approval_summary['InvoiceApprovalSummary']['approvalStatusRatio']
     approval_status_ratio_str = f"{approval_status_ratio['approved']} / {approval_status_ratio['rejected']} / {approval_status_ratio['manualReview']}"
-    df.loc[df['发票审批状态汇总'] == '审批状态比例', '',] = approval_status_ratio_str
+    df.loc[df['发票审批状态汇总'] == '审批状态比例（通过/未通过/转人工）', '',] = approval_status_ratio_str
 
     # 写入 Excel 文件
     with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
