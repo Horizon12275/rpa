@@ -387,7 +387,7 @@ public class RpaApplication implements CommandLineRunner {
             transactionSummary.setMost_frequent_transaction_relationship(relation);
         }
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("../.json/transaction_summary", transactionSummary);
+        jsonObject.put("transaction_summary", transactionSummary);
         fileWriter.write(JSON.toJSONString(jsonObject));
         fileWriter.close();
         // invoice summary
