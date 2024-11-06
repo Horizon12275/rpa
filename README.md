@@ -89,7 +89,7 @@
 
 ### 五、演示视频
 
-见
+见根目录下的视频文件
 
 ### 六、说明文档
 
@@ -101,7 +101,7 @@ conda activate rpa
 pip install -r requirements.txt
 ```
 
-- 同时需将 7z.exe 添加到环境变量中
+- 同时需将 7z.exe 添加到系统的环境变量中
 
 #### 运行方式
 
