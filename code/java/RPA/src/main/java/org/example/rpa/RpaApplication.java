@@ -98,6 +98,18 @@ public class RpaApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        //删除待人工审批发票文件夹下的所有文件
+        Path path = Paths.get("../.jpg/待人工审批发票/");
+        if (Files.exists(path) && Files.isDirectory(path)) {
+            // 遍历目录，删除所有文件
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+                for (Path entry : stream) {
+                    Files.delete(entry); // 删除文件
+                }
+            }
+        } else {
+            System.out.println("目录不存在或不是有效的目录");
+        }
         data.addAll(readData());
         parseData();
         saveData();
@@ -120,18 +132,6 @@ public class RpaApplication implements CommandLineRunner {
         String fileName = filePath;//文件名
         filePath = "../input/" + dataSet.toString() + "/" + fileName; // 修正路径为../input/dataSet/fileName
 
-        //删除待人工审批发票文件夹下的所有文件
-        Path path = Paths.get("../.jpg/待人工审批发票/");
-        if (Files.exists(path) && Files.isDirectory(path)) {
-            // 遍历目录，删除所有文件
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-                for (Path entry : stream) {
-                    Files.delete(entry); // 删除文件
-                }
-            }
-        } else {
-            System.out.println("目录不存在或不是有效的目录");
-        }
 
         //把人工审批的发票导出到指定文件夹
         if (status == 3) {
