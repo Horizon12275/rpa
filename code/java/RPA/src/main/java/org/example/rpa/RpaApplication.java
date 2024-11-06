@@ -371,12 +371,12 @@ public class RpaApplication implements CommandLineRunner {
         // transaction summary
         fileWriter = new FileWriter("../.json/transaction_summary.json");
         TransactionSummary transactionSummary = new TransactionSummary();
-        transactionSummary.setMajor_clients(customers.stream().filter(c -> c.getType().equals("重要客户")).map(Customer::getName).toArray(String[]::new));
-        transactionSummary.setClients(customers.stream().filter(c -> c.getType().equals("普通客户")).map(Customer::getName).toArray(String[]::new));
-        transactionSummary.setRegular_clients(customers.stream().filter(c -> c.getType().equals("小客户")).map(Customer::getName).toArray(String[]::new));
+        transactionSummary.setMajor_clients(customers.stream().filter(c -> c.getType().equals("大客户")).map(Customer::getName).toArray(String[]::new));
+        transactionSummary.setClients(customers.stream().filter(c -> c.getType().equals("客户")).map(Customer::getName).toArray(String[]::new));
+        transactionSummary.setRegular_clients(customers.stream().filter(c -> c.getType().equals("一般客户")).map(Customer::getName).toArray(String[]::new));
         transactionSummary.setImportant_suppliers(suppliers.stream().filter(s -> s.getType().equals("重要供应商")).map(Supplier::getName).toArray(String[]::new));
-        transactionSummary.setSuppliers(suppliers.stream().filter(s -> s.getType().equals("普通供应商")).map(Supplier::getName).toArray(String[]::new));
-        transactionSummary.setRegular_suppliers(suppliers.stream().filter(s -> s.getType().equals("小供应商")).map(Supplier::getName).toArray(String[]::new));
+        transactionSummary.setSuppliers(suppliers.stream().filter(s -> s.getType().equals("供应商")).map(Supplier::getName).toArray(String[]::new));
+        transactionSummary.setRegular_suppliers(suppliers.stream().filter(s -> s.getType().equals("一般供应商")).map(Supplier::getName).toArray(String[]::new));
         transactionSummary.setTop_buyers_by_purchase_volume(customers.stream().sorted(Comparator.comparingInt(Customer::getAmount).reversed()).limit(3).map(Customer::getName).toArray(String[]::new));
         transactionSummary.setTop_sellers_by_sales_volume(suppliers.stream().sorted(Comparator.comparingInt(Supplier::getAmount).reversed()).limit(3).map(Supplier::getName).toArray(String[]::new));
         Frequency mostFrequent = frequencyRepo.findAll().stream().max(Comparator.comparingInt(Frequency::getFreq)).orElse(null);
@@ -524,7 +524,7 @@ public class RpaApplication implements CommandLineRunner {
         for (int i = 0; i < size; i++) {
             String category;
             if (i < threshold1) {
-                category = "大供应商";
+                category = "重要供应商";
             } else if (i < threshold2) {
                 category = "供应商";
             } else {
