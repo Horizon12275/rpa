@@ -12,8 +12,22 @@ APP_list = [
         APIKey="8bf74a4816a840f556b26dfd879461a3",
         APISecret="OGZkOTdiODJjMmZhZjE2MzBjOWU0MDA5",
     ),
+    APP(
+        APPId="49905e86",
+        APIKey="b8602a5b887dde6d8d7c41204e149187",
+        APISecret="NTRjMTkwZjYwNjUzYmE4ODM2ODNlNWIw",
+    ),
+    APP(
+        APPId="a3c73bcc",
+        APIKey="8f5eebefc0a97e5b2bffce05563d3eb1",
+        APISecret="YjAyZGRlN2I5YTliNjdhMmE2ZWExNjI5",
+    ),
+    APP(
+        APPId="b576e26a",
+        APIKey="163c61dcad53ec2d0853428cd171d4b0",
+        APISecret="NDYwZGU4ZTQzOTk1MTIzODk3NWVlYjcx",
+    )
 ]
-
 
 # 请求数据
 def request_data(image_path, APPId):
